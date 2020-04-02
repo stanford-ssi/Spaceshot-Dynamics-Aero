@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import optimize
 
+
+# Primary author is Umar Patel, with contributions from John Bailey
 '''m is mass of propellant, must add mass of total rocket including airframe and engine'''
 '''The following numbers are from the N5800 burn data'''
 
