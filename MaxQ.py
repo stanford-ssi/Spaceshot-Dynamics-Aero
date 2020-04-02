@@ -13,10 +13,10 @@ propellant_mass = [9.425, 9.39557, 9.30245, 9.13611, 8.27327, 5.98604, 4.5069, 3
 '''propellant type is C-Star'''
 
 '''All inputs will be in SI-units. In the code we will convert to Stupid American units bc NASA equations are in those'''
-'''m would be mass of airframe plus mass of engine'''
-'''total mass would be mass of airframe and mass of engine plus mass of propellant'''
+'''m would be dry mass'''
+'''total mass is wet mass'''
 '''mass is in kg'''
-m = 17.401
+m = 11
 '''coefficient of drag below, will need to calculate when we receive specifics on '''
 Cd = 0.75
 '''Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared'''
@@ -80,8 +80,9 @@ fig.suptitle('Altitude, Velocity, Air Density, and Dynamic Pressure after igniti
 plt.xlabel("Time after motor ignition (seconds)")
 axs[0].plot(time_approx_curve, altitude_curve,'tab:orange')
 axs[0].set(ylabel='Altitude (m)')
-axs[1].plot(time_approx_curve, velocity_curve)
-axs[1].set(ylabel='Velocity (m/s)')
+#Plot normalized velocity curve with approximate Speed of Sound at 30km, ie Mach Number
+axs[1].plot(time_approx_curve, velocity_curve/300)
+axs[1].set(ylabel='Mach Number')
 axs[2].plot(time_approx_curve, air_density_curve, 'tab:green')
 axs[2].set(ylabel='Air density (kg/m^3)')
 axs[3].plot(time_approx_curve, .5*air_density_curve*velocity_curve**2, 'tab:red')
@@ -90,5 +91,3 @@ for ax in axs.flat:
     ax.label_outer()
 
 plt.show()
-
-
