@@ -12,7 +12,7 @@ thrust = [0, 6694.9, 6720.29, 6593.33, 6677.97, 6957.28, 6940.35, 6720.29, 6009.
 propellant_mass = [9.425, 9.39557, 9.30245, 9.13611, 8.27327, 5.98604, 4.5069, 3.17309, 1.31463, 0.478961, 0.232618, 0.0944131, 0.0400353, 0.0102497, 0.000661903, 0]
 '''propellant type is C-Star'''
 
-'''All inputs will be in SI-units. In the code we will convert to Stupid American units bc NASA equations are in those'''
+'''All inputs will be in SI-units.'''
 '''m would be dry mass'''
 '''total mass is wet mass'''
 '''mass is in kg'''
