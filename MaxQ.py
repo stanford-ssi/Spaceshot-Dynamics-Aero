@@ -48,13 +48,9 @@ mass_approx_curve = np.zeros(num_of_intervals)
 for i in range(num_of_intervals):
     mass_approx_curve[i] = np.interp(time_approx_curve[i], time, mass)
 
-def air_density(altitude_in_feet):
-    air_density_in_slugs_per_cubic_feet = (51.97 * (((254.65 + (0.00164 * altitude_in_feet)) / 389.98)**(-11.388))) / (1718.0 * (254.65 + (0.00164 * altitude_in_feet)))
-    conversion_to_kg_per_cubic_meter = air_density_in_slugs_per_cubic_feet * 515.379
-    return conversion_to_kg_per_cubic_meter
-
-def conversion_from_meters_to_feet(meters):
-    return meters * 3.28084
+def air_density(altitude):
+    air_density_in_kg_cubic_meters = (2.488*(((.00299*altitude-131.21)+273.1)/216.6)**(-11.388))/(.2869*((.00299*altitude-131.21)+273.1))
+    return air_density_in_kg_cubic_meters
 
 velocity_curve = np.zeros(num_of_intervals)
 air_density_curve = np.zeros(num_of_intervals)
@@ -63,7 +59,7 @@ altitude = starting_altitude
 instantaneous_velocity = starting_velocity
 for i in range(num_of_intervals):
     velocity_curve[i] = instantaneous_velocity
-    air_density_curve[i] = air_density(conversion_from_meters_to_feet(altitude))
+    air_density_curve[i] = air_density(altitude)
     altitude_curve[i] = altitude
 
     instantaneous_thrust = thrust_approx_curve[i]
