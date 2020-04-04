@@ -12,11 +12,11 @@ thrust = [0, 6694.9, 6720.29, 6593.33, 6677.97, 6957.28, 6940.35, 6720.29, 6009.
 propellant_mass = [9.425, 9.39557, 9.30245, 9.13611, 8.27327, 5.98604, 4.5069, 3.17309, 1.31463, 0.478961, 0.232618, 0.0944131, 0.0400353, 0.0102497, 0.000661903, 0]
 '''propellant type is C-Star'''
 
-'''All inputs will be in SI-units. In the code we will convert to Stupid American units bc NASA equations are in those'''
-'''m would be mass of airframe plus mass of engine'''
-'''total mass would be mass of airframe and mass of engine plus mass of propellant'''
+'''All inputs will be in SI-units.'''
+'''m would be dry mass'''
+'''total mass is wet mass'''
 '''mass is in kg'''
-m = 17.401
+m = 11
 '''coefficient of drag below, will need to calculate when we receive specifics on '''
 Cd = 0.75
 '''Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared'''
@@ -48,13 +48,9 @@ mass_approx_curve = np.zeros(num_of_intervals)
 for i in range(num_of_intervals):
     mass_approx_curve[i] = np.interp(time_approx_curve[i], time, mass)
 
-def air_density(altitude_in_feet):
-    air_density_in_slugs_per_cubic_feet = (51.97 * (((254.65 + (0.00164 * altitude_in_feet)) / 389.98)**(-11.388))) / (1718.0 * (254.65 + (0.00164 * altitude_in_feet)))
-    conversion_to_kg_per_cubic_meter = air_density_in_slugs_per_cubic_feet * 515.379
-    return conversion_to_kg_per_cubic_meter
-
-def conversion_from_meters_to_feet(meters):
-    return meters * 3.28084
+def air_density(altitude):
+    air_density_in_kg_cubic_meters = (2.488*(((.00299*altitude-131.21)+273.1)/216.6)**(-11.388))/(.2869*((.00299*altitude-131.21)+273.1))
+    return air_density_in_kg_cubic_meters
 
 velocity_curve = np.zeros(num_of_intervals)
 air_density_curve = np.zeros(num_of_intervals)
@@ -63,7 +59,7 @@ altitude = starting_altitude
 instantaneous_velocity = starting_velocity
 for i in range(num_of_intervals):
     velocity_curve[i] = instantaneous_velocity
-    air_density_curve[i] = air_density(conversion_from_meters_to_feet(altitude))
+    air_density_curve[i] = air_density(altitude)
     altitude_curve[i] = altitude
 
     instantaneous_thrust = thrust_approx_curve[i]
@@ -80,8 +76,9 @@ fig.suptitle('Altitude, Velocity, Air Density, and Dynamic Pressure after igniti
 plt.xlabel("Time after motor ignition (seconds)")
 axs[0].plot(time_approx_curve, altitude_curve,'tab:orange')
 axs[0].set(ylabel='Altitude (m)')
-axs[1].plot(time_approx_curve, velocity_curve)
-axs[1].set(ylabel='Velocity (m/s)')
+#Plot normalized velocity curve with approximate Speed of Sound at 30km, ie Mach Number
+axs[1].plot(time_approx_curve, velocity_curve/300)
+axs[1].set(ylabel='Mach Number')
 axs[2].plot(time_approx_curve, air_density_curve, 'tab:green')
 axs[2].set(ylabel='Air density (kg/m^3)')
 axs[3].plot(time_approx_curve, .5*air_density_curve*velocity_curve**2, 'tab:red')
@@ -90,5 +87,3 @@ for ax in axs.flat:
     ax.label_outer()
 
 plt.show()
-
-
