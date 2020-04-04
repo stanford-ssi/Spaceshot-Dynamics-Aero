@@ -1,5 +1,6 @@
 from scipy import integrate
 import numpy as np
+import csv
 
 def get_data(time, accel):
     vel = integrate.cumtrapz(accel, x=time, initial=0)
@@ -22,5 +23,12 @@ def get_data(time, accel):
 
     return vel, x_pos, rho
 
-def get_spin(vel, rho):
-    return [vel[i] / 0.004 * np.sqrt(2 * rho[i] * -.2352 * 0.0607 * 7 * 0.00607) for i in range(len(vel))]
+def get_spin(vel, rho, path):
+    rocket = {}
+    with open(path, mode='r') as csv_file:
+        reader = csv.DictReader(csv_file)
+        # it's only iterable so we need this ugliness
+        for line in reader:
+            rocket = line
+    rocket = dict([key, float(value)] for key, value in rocket.items())
+    return [vel[i] / rocket['I_x'] * np.sqrt(2 * rho[i] * rocket['I_y'] * rocket['Surface Area'] * rocket['Calipers'] * rocket['Diameter']) for i in range(len(vel))]
