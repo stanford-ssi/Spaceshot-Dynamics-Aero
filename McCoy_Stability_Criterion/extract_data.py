@@ -1,5 +1,6 @@
 import json
 import sys
+import csv
 
 def flatten(data, prefix=""):
     flat = {}
@@ -45,3 +46,24 @@ def get_column(lines, column):
     data = [[data[key] for data in json_body] for key in ["tick","adxl1.a.0","adxl1.a.1","adxl1.a.2","bmi1.a.0","bmi1.a.1","bmi1.a.2"]]
     data[0] = [(a)/1000 for a in data[0]]
     return data[0], data[column]
+
+def get_thrust(lines, mass):
+    time = []
+    accel = []
+    for i, line in enumerate(lines):
+         if i > 1:
+             time.append(float(line.split()[0]))
+             accel.append(float(line.split()[1]) / mass)
+    return time, accel
+    # time = [float(line.split()[0]) for i, line in enumerate(lines) if i > 1]
+    # accel = [float(line.split()[1]) / mass for i, line in enumerate(lines) if i > 1]
+    return time, accel
+
+def get_rocket(path):
+    rocket = {}
+    with open(path, mode='r') as csv_file:
+        reader = csv.DictReader(csv_file)
+        # it's only iterable so we need this ugliness
+        for line in reader:
+            rocket = line
+    return dict([key, float(value)] for key, value in rocket.items())

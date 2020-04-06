@@ -23,12 +23,5 @@ def get_data(time, accel):
 
     return vel, x_pos, rho
 
-def get_spin(vel, rho, path):
-    rocket = {}
-    with open(path, mode='r') as csv_file:
-        reader = csv.DictReader(csv_file)
-        # it's only iterable so we need this ugliness
-        for line in reader:
-            rocket = line
-    rocket = dict([key, float(value)] for key, value in rocket.items())
+def get_spin(vel, rho, rocket):
     return [vel[i] / rocket['I_x'] * np.sqrt(2 * rho[i] * rocket['I_y'] * rocket['Surface Area'] * rocket['Calipers'] * rocket['Diameter']) for i in range(len(vel))]
