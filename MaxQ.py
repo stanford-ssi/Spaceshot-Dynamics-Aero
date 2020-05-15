@@ -15,13 +15,16 @@ m = 11
 # coefficient of drag below, will need to calculate
 Cd = 0.75
 
-# spin damping moment coefficient
+# Spin damping moment coefficient
 Clp = 0.5
 
-#Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared
+# Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared
 ref_area = 0.008107319269
 diameter = 0.5
-starting_velocity = 0
+
+# Moment of inertia about axis of symmetry
+momentOfInertiaX = 2
+starting_velocity = 1
 
 # Angular velocity in rad/second about axis of rocket symmetry
 omega = 0
@@ -53,6 +56,7 @@ def air_density(altitude):
     return air_density_in_kg_cubic_meters
 
 velocity_curve = np.zeros(num_of_intervals)
+omega_curve = np.zeros(num_of_intervals)
 air_density_curve = np.zeros(num_of_intervals)
 altitude_curve = np.zeros(num_of_intervals)
 altitude = starting_altitude
@@ -60,6 +64,7 @@ altitude = starting_altitude
 V = starting_velocity
 for i in range(num_of_intervals):
     velocity_curve[i] = V
+    omega_curve[i] = omega
     air_density_curve[i] = air_density(altitude)
     altitude_curve[i] = altitude
     thrust = thrust_approx_curve[i]
@@ -79,11 +84,10 @@ for i in range(num_of_intervals):
     V = V + A * time_interval
 
     # Update spin rate omega based on spin damping moment
-    omega = omega - 0.5*air_density_curve[i]*V^2+ref_area*diameter*(omega*diameter/V)*Clp
+    omega = omega-0.5*(air_density_curve[i]*V**2+ref_area*diameter*(omega*diameter/V)*Clp/momentOfInertiaX)*time_interval
 
 
-
-fig, axs= plt.subplots(4)
+fig, axs= plt.subplots(5)
 fig.suptitle('Altitude, Velocity, Air Density, and Dynamic Pressure after ignition')
 plt.xlabel("Time after motor ignition (seconds)")
 axs[0].plot(time_approx_curve, altitude_curve,'tab:orange')
@@ -95,7 +99,8 @@ axs[2].plot(time_approx_curve, air_density_curve, 'tab:green')
 axs[2].set(ylabel='Air density (kg/m^3)')
 axs[3].plot(time_approx_curve, .5*air_density_curve*velocity_curve**2, 'tab:red')
 axs[3].set(ylabel= 'Q (N/M^2)')
+axs[4].plot(time_approx_curve, omega)
+axs[4].set(ylabel = 'Spin Rate (rad/sec)')
 for ax in axs.flat:
     ax.label_outer()
-
 plt.show()
