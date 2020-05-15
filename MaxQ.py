@@ -15,11 +15,15 @@ m = 11
 # coefficient of drag below, will need to calculate
 Cd = 0.75
 
+# spin damping moment coefficient
+Clp = 0.5
+
 #Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared
 ref_area = 0.008107319269
+diameter = 0.5
 starting_velocity = 0
 
-# Angular velocity in RPM about axis of rocket symmetry
+# Angular velocity in rad/second about axis of rocket symmetry
 omega = 0
 starting_altitude = 26000
 
@@ -75,6 +79,7 @@ for i in range(num_of_intervals):
     V = V + A * time_interval
 
     # Update spin rate omega based on spin damping moment
+    omega = omega - 0.5*air_density_curve[i]*V^2+ref_area*diameter*(omega*diameter/V)*Clp
 
 
 
