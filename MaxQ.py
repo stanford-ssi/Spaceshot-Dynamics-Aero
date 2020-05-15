@@ -22,20 +22,19 @@ Clp = 0.5
 ref_area = 0.008107319269
 diameter = 0.5
 
-# Moment of inertia about axis of symmetry
-momentOfInertiaX = 10
+# Moment of inertia about axis of symmetry (kg m^2)
+momentOfInertiaX = .004
 
-# Must initialize with nonzero value, or division by zero with omega update
+# Initial velocity (m/s) (Must initialize with nonzero value, or division by zero with omega update)
 starting_velocity = 1
 
 # Angular velocity in rad/second about axis of rocket symmetry
 omega_0 = 210
 starting_altitude = 26000
 
-
-# Number of intervals is arbitrary
-num_of_intervals = 300
-time_approx_curve = np.linspace(0, 3.594, num=num_of_intervals)
+# Can adjust interval number
+num_of_intervals = 3000
+time_approx_curve = np.linspace(0, 5, num=num_of_intervals)
 time_interval = time_approx_curve[1] - time_approx_curve[0]
 
 # Creates thrust array
@@ -90,23 +89,31 @@ for i in range(num_of_intervals):
     # omega = omega - torque / moment of inertia * delta t
     omega = omega-0.5*(air_density_curve[i]*V**2+ref_area*diameter*(omega*diameter/V)*Clp/momentOfInertiaX)*time_interval
     
-  
-'''
+
 fig, axs= plt.subplots(5)
 fig.suptitle('Altitude, Velocity, Air Density, and Dynamic Pressure after ignition')
 plt.xlabel("Time after motor ignition (seconds)")
+
+# Plot altitude
 axs[0].plot(time_approx_curve, altitude_curve,'tab:orange')
 axs[0].set(ylabel='Altitude (m)')
-#Plot normalized velocity curve with approximate Speed of Sound at 30km, ie Mach Number
+
+# Plot normalized velocity curve with approximate Speed of Sound at 30km, ie Mach Number
 axs[1].plot(time_approx_curve, velocity_curve/300)
 axs[1].set(ylabel='Mach Number')
+
+# Plot air density
 axs[2].plot(time_approx_curve, air_density_curve, 'tab:green')
 axs[2].set(ylabel='Air density (kg/m^3)')
+
+# Plot dynamic pressure
 axs[3].plot(time_approx_curve, .5*air_density_curve*velocity_curve**2, 'tab:red')
 axs[3].set(ylabel= 'Q (N/M^2)')
-axs[4].plot(time_approx_curve, omega)
+
+# Plot spin rate
+axs[4].plot(time_approx_curve, omega_curve)
 axs[4].set(ylabel = 'Spin Rate (rad/sec)')
+
 for ax in axs.flat:
     ax.label_outer()
 plt.show()
-'''
