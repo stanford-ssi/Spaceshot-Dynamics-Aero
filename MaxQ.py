@@ -2,43 +2,39 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import optimize
 
-
-# Primary author is Umar Patel, with contributions from John Bailey
-'''m is mass of propellant, must add mass of total rocket including airframe and engine'''
-'''The following numbers are from the N5800 burn data'''
+# Uses SI units
+# m is mass of propellant, must add mass of total rocket including airframe and engine
+#The following numbers are from the N5800 burn data
 
 time = [0, 0.019, 0.049, 0.103, 0.384, 1.109, 1.569, 1.991, 2.622, 3.011, 3.192, 3.334, 3.423, 3.513, 3.581, 3.594]
 thrust = [0, 6694.9, 6720.29, 6593.33, 6677.97, 6957.28, 6940.35, 6720.29, 6009.33, 3275.51, 2606.86, 1599.67, 1041.05, 389.337, 220.06, 0]
 propellant_mass = [9.425, 9.39557, 9.30245, 9.13611, 8.27327, 5.98604, 4.5069, 3.17309, 1.31463, 0.478961, 0.232618, 0.0944131, 0.0400353, 0.0102497, 0.000661903, 0]
-'''propellant type is C-Star'''
 
-'''All inputs will be in SI-units.'''
-'''m would be dry mass'''
-'''total mass is wet mass'''
-'''mass is in kg'''
+# Dry mass "m"
 m = 11
-'''coefficient of drag below, will need to calculate when we receive specifics on '''
+# coefficient of drag below, will need to calculate
 Cd = 0.75
-'''Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared'''
+
+#Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared
 ref_area = 0.008107319269
-'''velocity in meters/second'''
 starting_velocity = 0
-'''altitude in meters'''
+
+# Angular velocity in RPM about axis of rocket symmetry
+omega = 0
 starting_altitude = 26000
 
 
-'''You can change num_of_intervals to however many intervals you want'''
+# Number of intervals is arbitrary
 num_of_intervals = 300
 time_approx_curve = np.linspace(0, 3.594, num=num_of_intervals)
 time_interval = time_approx_curve[1] - time_approx_curve[0]
 
-'''creates thrust array'''
+# Creates thrust array
 thrust_approx_curve = np.zeros(num_of_intervals)
 for i in range(num_of_intervals):
     thrust_approx_curve[i] = np.interp(time_approx_curve[i], time, thrust)
 
-
-'''creates total mass array'''
+# Creates total mass array
 airframe_and_engine_mass = m * np.ones(16)
 mass = np.zeros(16)
 for i in range(16):
@@ -56,18 +52,29 @@ velocity_curve = np.zeros(num_of_intervals)
 air_density_curve = np.zeros(num_of_intervals)
 altitude_curve = np.zeros(num_of_intervals)
 altitude = starting_altitude
-instantaneous_velocity = starting_velocity
+
+V = starting_velocity
 for i in range(num_of_intervals):
-    velocity_curve[i] = instantaneous_velocity
+    velocity_curve[i] = V
     air_density_curve[i] = air_density(altitude)
     altitude_curve[i] = altitude
+    thrust = thrust_approx_curve[i]
 
-    instantaneous_thrust = thrust_approx_curve[i]
-    instantaneous_drag = 0.5 * air_density_curve[i] * (instantaneous_velocity ** 2.0) * Cd * ref_area
-    instantaneous_net_force = instantaneous_thrust - instantaneous_drag
-    instantaneous_acceleration = instantaneous_net_force / mass_approx_curve[i]
-    altitude = altitude + (instantaneous_velocity * time_interval) + (0.5 * instantaneous_acceleration * (time_interval ** 2.0))
-    instantaneous_velocity = instantaneous_velocity + instantaneous_acceleration * time_interval
+    # Update drag force
+    drag = 0.5 * air_density_curve[i] * (V ** 2.0) * Cd * ref_area
+
+    # Net force is thrust minus drag
+    F = thrust - drag
+
+    # Acceleration is net force over mass
+    A = F / mass_approx_curve[i]
+
+    altitude = altitude + (V * time_interval) + (0.5 * A * (time_interval ** 2.0))
+
+    # Update velocity
+    V = V + A * time_interval
+
+    # Update spin rate omega based on spin damping moment
 
 
 
