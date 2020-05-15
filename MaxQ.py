@@ -91,7 +91,7 @@ for i in range(num_of_intervals):
     
 
 fig, axs= plt.subplots(5)
-fig.suptitle('Altitude, Velocity, Air Density, and Dynamic Pressure after ignition')
+fig.suptitle('Altitude, Velocity, Air Density, Dynamic Pressure, and Spin Rate after ignition')
 plt.xlabel("Time after motor ignition (seconds)")
 
 # Plot altitude
@@ -107,11 +107,11 @@ axs[2].plot(time_approx_curve, air_density_curve, 'tab:green')
 axs[2].set(ylabel='Air density (kg/m^3)')
 
 # Plot dynamic pressure
-axs[3].plot(time_approx_curve, .5*air_density_curve*velocity_curve**2, 'tab:red')
+axs[3].plot(time_approx_curve, .5*air_density_curve*velocity_curve**2, 'tab:purple')
 axs[3].set(ylabel= 'Q (N/M^2)')
 
 # Plot spin rate
-axs[4].plot(time_approx_curve, omega_curve)
+axs[4].plot(time_approx_curve, omega_curve, 'tab:red')
 axs[4].set(ylabel = 'Spin Rate (rad/sec)')
 
 for ax in axs.flat:
