@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import optimize
 
-# Uses SI units
+# All in SI units
 # m is mass of propellant, must add mass of total rocket including airframe and engine
 #The following numbers are from the N5800 burn data
 
@@ -23,11 +23,13 @@ ref_area = 0.008107319269
 diameter = 0.5
 
 # Moment of inertia about axis of symmetry
-momentOfInertiaX = 2
+momentOfInertiaX = 10
+
+# Must initialize with nonzero value, or division by zero with omega update
 starting_velocity = 1
 
 # Angular velocity in rad/second about axis of rocket symmetry
-omega = 0
+omega_0 = 210
 starting_altitude = 26000
 
 
@@ -62,6 +64,7 @@ altitude_curve = np.zeros(num_of_intervals)
 altitude = starting_altitude
 
 V = starting_velocity
+omega = omega_0
 for i in range(num_of_intervals):
     velocity_curve[i] = V
     omega_curve[i] = omega
@@ -84,9 +87,11 @@ for i in range(num_of_intervals):
     V = V + A * time_interval
 
     # Update spin rate omega based on spin damping moment
+    # omega = omega - torque / moment of inertia * delta t
     omega = omega-0.5*(air_density_curve[i]*V**2+ref_area*diameter*(omega*diameter/V)*Clp/momentOfInertiaX)*time_interval
-
-
+    
+  
+'''
 fig, axs= plt.subplots(5)
 fig.suptitle('Altitude, Velocity, Air Density, and Dynamic Pressure after ignition')
 plt.xlabel("Time after motor ignition (seconds)")
@@ -104,3 +109,4 @@ axs[4].set(ylabel = 'Spin Rate (rad/sec)')
 for ax in axs.flat:
     ax.label_outer()
 plt.show()
+'''
