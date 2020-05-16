@@ -10,12 +10,14 @@ time = [0, 0.019, 0.049, 0.103, 0.384, 1.109, 1.569, 1.991, 2.622, 3.011, 3.192,
 thrust = [0, 6694.9, 6720.29, 6593.33, 6677.97, 6957.28, 6940.35, 6720.29, 6009.33, 3275.51, 2606.86, 1599.67, 1041.05, 389.337, 220.06, 0]
 propellant_mass = [9.425, 9.39557, 9.30245, 9.13611, 8.27327, 5.98604, 4.5069, 3.17309, 1.31463, 0.478961, 0.232618, 0.0944131, 0.0400353, 0.0102497, 0.000661903, 0]
 
+g = 9.8
+
 # Dry mass "m"
 m = 11
 # coefficient of drag below, will need to calculate
 Cd = 0.75
 
-# Spin damping moment coefficient
+# Spin damping moment coefficient, will need to calculate
 Clp = 0.5
 
 # Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared
@@ -74,8 +76,11 @@ for i in range(num_of_intervals):
     # Update drag force
     drag = 0.5 * air_density_curve[i] * (V ** 2.0) * Cd * ref_area
 
-    # Net force is thrust minus drag
-    F = thrust - drag
+    # Update gravitational force
+    Fg = mass_approx_curve[i]*g
+
+    # Net force is thrust minus drag minus gravitational force
+    F = thrust - drag - Fg
 
     # Acceleration is net force over mass
     A = F / mass_approx_curve[i]
@@ -83,13 +88,19 @@ for i in range(num_of_intervals):
     altitude = altitude + (V * time_interval) + (0.5 * A * (time_interval ** 2.0))
 
     # Update velocity
+    # velocity = v0 + A * delta t
     V = V + A * time_interval
 
     # Update spin rate omega based on spin damping moment
     # omega = omega - torque / moment of inertia * delta t
-    omega = omega-0.5*(air_density_curve[i]*V**2+ref_area*diameter*(omega*diameter/V)*Clp/momentOfInertiaX)*time_interval
-    
+    if omega > 0:
+        omega = omega-0.5*(air_density_curve[i]*V**2 + ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
+    else: 
+        omega = omega+0.5*(air_density_curve[i]*V**2 + ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
 
+
+    
+# Set up Pyplot figure with subplots for altitude, velocity, air density, dynamic pressure, spin rate
 fig, axs= plt.subplots(5)
 fig.suptitle('Altitude, Velocity, Air Density, Dynamic Pressure, and Spin Rate after ignition')
 plt.xlabel("Time after motor ignition (seconds)")
@@ -116,4 +127,4 @@ axs[4].set(ylabel = 'Spin Rate (rad/sec)')
 
 for ax in axs.flat:
     ax.label_outer()
-plt.show()
+plt.show() 
