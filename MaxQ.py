@@ -18,7 +18,7 @@ m = 11
 Cd = 0.75
 
 # Spin damping moment coefficient, will need to calculate
-Clp = 0.5
+Clp = 0.03
 
 # Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared
 ref_area = 0.008107319269
@@ -31,7 +31,7 @@ momentOfInertiaX = .004
 starting_velocity = 1
 
 # Angular velocity in rad/second about axis of rocket symmetry
-omega_0 = 210
+omega_0 = 336
 starting_altitude = 26000
 
 # Can adjust interval number
@@ -94,12 +94,10 @@ for i in range(num_of_intervals):
     # Update spin rate omega based on spin damping moment
     # omega = omega - torque / moment of inertia * delta t
     if omega > 0:
-        omega = omega-0.5*(air_density_curve[i]*V**2 + ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
-    else: 
-        omega = omega+0.5*(air_density_curve[i]*V**2 + ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
+        omega = omega-0.5*(air_density_curve[i]*V**2 * ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
 
 
-    
+
 # Set up Pyplot figure with subplots for altitude, velocity, air density, dynamic pressure, spin rate
 fig, axs= plt.subplots(5)
 fig.suptitle('Altitude, Velocity, Air Density, Dynamic Pressure, and Spin Rate after ignition')
@@ -125,6 +123,13 @@ axs[3].set(ylabel= 'Q (N/M^2)')
 axs[4].plot(time_approx_curve, omega_curve, 'tab:red')
 axs[4].set(ylabel = 'Spin Rate (rad/sec)')
 
+# Plot end of burn
+axs[4].set_ylim(bottom = 0)
+axs[4].axvline(x = 3.594, color = 'r', label = "end of burn")
+min_spin = min(range(len(time_approx_curve)), key=lambda i: abs(time_approx_curve[i]-3.594))
+axs[4].axhline(y = omega_curve[min_spin], color = 'r', label = "spin at end burn")
+print omega_curve[min_spin]
+
 for ax in axs.flat:
     ax.label_outer()
-plt.show() 
+plt.show()
