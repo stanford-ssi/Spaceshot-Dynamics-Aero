@@ -18,7 +18,7 @@ m = 11
 Cd = 0.75
 
 # Spin damping moment coefficient, will need to calculate
-Clp = 0.5
+Clp = .5
 
 # Actual reference area TBD, below is just approximate cross-sectional area of rockets in meters squared
 ref_area = 0.008107319269
@@ -94,9 +94,9 @@ for i in range(num_of_intervals):
     # Update spin rate omega based on spin damping moment
     # omega = omega - torque / moment of inertia * delta t
     if omega > 0:
-        omega = omega-0.5*(air_density_curve[i]*V**2 + ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
+        omega = omega-0.5*(air_density_curve[i]*V**2*ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
     else: 
-        omega = omega+0.5*(air_density_curve[i]*V**2 + ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
+        omega = omega + 0.5*(air_density_curve[i]*V**2 *ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
 
 
     
