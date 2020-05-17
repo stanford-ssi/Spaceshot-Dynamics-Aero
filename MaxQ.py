@@ -15,10 +15,10 @@ g = 9.8
 
 # Dry mass "m"
 m = 11
-# coefficient of drag below, will need to calculate
+# TODO: calculate
 Cd = 0.75
 
-# Spin damping moment coefficient, will need to calculate
+# Spin damping moment coefficient TODO: calculate
 
 Clp = 0.03
 
@@ -38,7 +38,7 @@ starting_altitude = 26000
 
 # Can adjust interval number
 num_of_intervals = 3000
-time_approx_curve = np.linspace(0, 10, num=num_of_intervals)
+time_approx_curve = np.linspace(0, 240, num=num_of_intervals)
 time_interval = time_approx_curve[1] - time_approx_curve[0]
 
 # Creates thrust array
@@ -95,12 +95,7 @@ for i in range(num_of_intervals):
 
     # Update spin rate omega based on spin damping moment
     # omega = omega - torque / moment of inertia * delta t
-    if omega > 0:
-        omega = omega-0.5*(air_density_curve[i]*V**2*ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
-    #else: 
-       # omega = omega + 0.5*(air_density_curve[i]*V**2 *ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
-
-
+    omega = omega-0.5*(air_density_curve[i]*abs(V)**2*ref_area * diameter * (omega * diameter/ abs(V)) * Clp / momentOfInertiaX) * time_interval
 
 # Set up Pyplot figure with subplots for altitude, velocity, air density, dynamic pressure, spin rate
 fig, axs= plt.subplots(5)
@@ -112,7 +107,8 @@ axs[0].plot(time_approx_curve, altitude_curve,'tab:orange')
 axs[0].set(ylabel='Altitude (m)')
 
 # Plot normalized velocity curve with approximate Speed of Sound at 30km, ie Mach Number
-axs[1].plot(time_approx_curve, velocity_curve/300)
+# Plot speed of sound as function of altitude
+axs[1].plot(time_approx_curve, abs(velocity_curve/300))
 axs[1].set(ylabel='Mach Number')
 
 # Plot air density
