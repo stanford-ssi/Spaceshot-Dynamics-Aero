@@ -67,3 +67,21 @@ def get_rocket(path):
         for line in reader:
             rocket = line
     return dict([key, float(value)] for key, value in rocket.items())
+
+def get_mass(time, rocket):
+    total_mass = rocket['Total Weight']
+    #from data sheet of H550
+    burn_time = 0.55
+    motor_mass = 0.316
+    prop_mass = 0.176
+    dry_mass = motor_mass - prop_mass
+    #linear interpolation of mass
+    #TODO approximate using N5800 fit
+    current_mass = rocket['Total Weight'] - prop_mass
+    if time < burn_time:
+        loss_rate = prop_mass / burn_time
+        current_mass = total_mass - loss_rate * time
+    return current_mass
+
+    
+    
