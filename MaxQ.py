@@ -10,6 +10,7 @@ time = [0, 0.019, 0.049, 0.103, 0.384, 1.109, 1.569, 1.991, 2.622, 3.011, 3.192,
 thrust = [0, 6694.9, 6720.29, 6593.33, 6677.97, 6957.28, 6940.35, 6720.29, 6009.33, 3275.51, 2606.86, 1599.67, 1041.05, 389.337, 220.06, 0]
 propellant_mass = [9.425, 9.39557, 9.30245, 9.13611, 8.27327, 5.98604, 4.5069, 3.17309, 1.31463, 0.478961, 0.232618, 0.0944131, 0.0400353, 0.0102497, 0.000661903, 0]
 
+
 g = 9.8
 
 # Dry mass "m"
@@ -37,7 +38,7 @@ starting_altitude = 26000
 
 # Can adjust interval number
 num_of_intervals = 3000
-time_approx_curve = np.linspace(0, 5, num=num_of_intervals)
+time_approx_curve = np.linspace(0, 10, num=num_of_intervals)
 time_interval = time_approx_curve[1] - time_approx_curve[0]
 
 # Creates thrust array
@@ -96,8 +97,10 @@ for i in range(num_of_intervals):
     # omega = omega - torque / moment of inertia * delta t
     if omega > 0:
         omega = omega-0.5*(air_density_curve[i]*V**2*ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
-    else: 
-        omega = omega + 0.5*(air_density_curve[i]*V**2 *ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
+    #else: 
+       # omega = omega + 0.5*(air_density_curve[i]*V**2 *ref_area * diameter * (omega * diameter/ V) * Clp / momentOfInertiaX) * time_interval
+
+
 
 # Set up Pyplot figure with subplots for altitude, velocity, air density, dynamic pressure, spin rate
 fig, axs= plt.subplots(5)
@@ -121,14 +124,14 @@ axs[3].plot(time_approx_curve, .5*air_density_curve*velocity_curve**2, 'tab:purp
 axs[3].set(ylabel= 'Q (N/M^2)')
 
 # Plot spin rate
-axs[4].plot(time_approx_curve, omega_curve, 'tab:red')
+axs[4].plot(time_approx_curve, omega_curve, color = 'r')
 axs[4].set(ylabel = 'Spin Rate (rad/sec)')
 
 # Plot end of burn
 axs[4].set_ylim(bottom = 0)
-axs[4].axvline(x = 3.594, color = 'r', label = "end of burn")
+axs[4].axvline(x = 3.594, color = 'r',linestyle="dashed", label = "end of burn")
 min_spin = min(range(len(time_approx_curve)), key=lambda i: abs(time_approx_curve[i]-3.594))
-axs[4].axhline(y = omega_curve[min_spin], color = 'r', label = "spin at end burn")
+axs[4].axhline(y = omega_curve[min_spin], color = 'r',linestyle="dotted", label = "spin at end burn")
 print(omega_curve[min_spin])
 
 for ax in axs.flat:
