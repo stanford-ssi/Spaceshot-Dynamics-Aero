@@ -1,6 +1,14 @@
 from scipy import integrate
 import numpy as np
 import csv
+import copy
+
+def update_rocket(rocket, motor):
+    profile = [copy.deepcopy(rocket) for i in range(len(motor['mass']))]
+    for i in range(len(motor['mass'])):
+        profile[i]['Total Weight'] += motor['mass'][i]
+        profile[i]['I_x'] += motor['mass'][i] / 12 * (3 * motor['radius'] ** 2 + motor['height']**2 + (rocket['Airframe Length'] / 2) ** 2)
+    return profile
 
 def get_data(time, accel):
     vel = integrate.cumtrapz(accel, x=time, initial=0)
@@ -24,4 +32,4 @@ def get_data(time, accel):
     return vel, x_pos, rho
 
 def get_spin(vel, rho, rocket):
-    return [vel[i] / rocket['I_x'] * np.sqrt(2 * rho[i] * rocket['I_y'] * rocket['Surface Area'] * rocket['Calipers'] * rocket['Diameter']) for i in range(len(vel))]
+    return [vel[i] / rocket[i]['I_x'] * np.sqrt(2 * rho[i] * rocket[i]['I_y'] * rocket[i]['Surface Area'] * rocket[i]['Calipers'] * rocket[i]['Diameter']) for i in range(len(vel))]
