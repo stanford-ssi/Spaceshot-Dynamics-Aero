@@ -53,7 +53,7 @@ def get_thrust(lines, mass):
     for i, line in enumerate(lines):
          if i > 1:
              time.append(float(line.split()[0]))
-             accel.append(float(line.split()[1]) / mass)
+             accel.append(float(line.split()[1]) / mass[i - 2])
     return time, accel
     # time = [float(line.split()[0]) for i, line in enumerate(lines) if i > 1]
     # accel = [float(line.split()[1]) / mass for i, line in enumerate(lines) if i > 1]
