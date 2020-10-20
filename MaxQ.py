@@ -13,6 +13,8 @@ propellant_mass = [9.425, 9.39557, 9.30245, 9.13611, 8.27327, 5.98604, 4.5069, 3
 
 g = 9.8
 
+
+#TODO hangle
 # Dry mass "m"
 m = 11
 # TODO: calculate
@@ -33,7 +35,7 @@ momentOfInertiaX = .004
 starting_velocity = 1
 
 # Angular velocity in rad/second about axis of rocket symmetry
-omega_0 = 336
+omega_0 = 315
 starting_altitude = 26000
 
 # Can adjust interval number
@@ -55,6 +57,7 @@ for i in range(16):
 mass_approx_curve = np.zeros(num_of_intervals)
 for i in range(num_of_intervals):
     mass_approx_curve[i] = np.interp(time_approx_curve[i], time, mass)
+
 
 def air_density(altitude):
     air_density_in_kg_cubic_meters = (2.488*(((.00299*altitude-131.21)+273.1)/216.6)**(-11.388))/(.2869*((.00299*altitude-131.21)+273.1))
@@ -106,6 +109,7 @@ plt.xlabel("Time after motor ignition (seconds)")
 axs[0].plot(time_approx_curve, altitude_curve,'tab:orange')
 axs[0].set(ylabel='Altitude (m)')
 
+
 # Plot normalized velocity curve with approximate Speed of Sound at 30km, ie Mach Number
 # Plot speed of sound as function of altitude
 axs[1].plot(time_approx_curve, abs(velocity_curve/300))
@@ -114,6 +118,7 @@ axs[1].set(ylabel='Mach Number')
 # Plot air density
 axs[2].plot(time_approx_curve, air_density_curve, 'tab:green')
 axs[2].set(ylabel='Air density (kg/m^3)')
+
 
 # Plot dynamic pressure
 axs[3].plot(time_approx_curve, .5*air_density_curve*velocity_curve**2, 'tab:purple')
@@ -132,4 +137,6 @@ print(omega_curve[min_spin])
 
 for ax in axs.flat:
     ax.label_outer()
+    ax.grid()
 plt.show()
+
