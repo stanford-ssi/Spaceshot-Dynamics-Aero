@@ -29,6 +29,7 @@ ref_area = 0.008107319269
 diameter = 0.5
 
 # Moment of inertia about axis of symmetry (kg m^2)
+#TODO: Moment of Inertia FunctionS
 momentOfInertiaX = .004
 
 # Initial velocity (m/s) (Must initialize with nonzero value, or division by zero with omega update)
@@ -139,4 +140,3 @@ for ax in axs.flat:
     ax.label_outer()
     ax.grid()
 plt.show()
-
