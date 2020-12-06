@@ -54,11 +54,11 @@ def get_thrust(lines, mass):
          if i > 1:
              time.append(float(line.split()[0]))
              accel.append(float(line.split()[1]) / mass[i - 2])
-    small_timesteps = np.linspace(time[i], time[len(time)-1], 9525)
-    accel = np.interp(small_timesteps, time, accel)
-    return time, accel
-    # time = [float(line.split()[0]) for i, line in enumerate(lines) if i > 1]
-    # accel = [float(line.split()[1]) / mass for i, line in enumerate(lines) if i > 1]
+    # small_timesteps = np.linspace(time[i], time[len(time)-1], 9525)
+    # accel = np.interp(small_timesteps, time, accel)
+    # return time, accel
+    time = [float(line.split()[0]) for i, line in enumerate(lines) if i > 1]
+    accel = [float(line.split()[1]) / mass for i, line in enumerate(lines) if i > 1]
     return time, accel
 
 def get_rocket(path):
