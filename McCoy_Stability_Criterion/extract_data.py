@@ -54,9 +54,11 @@ def get_thrust(lines, mass):
          if i > 1:
              time.append(float(line.split()[0]))
              accel.append(float(line.split()[1]) / mass[i - 2])
-    return time, accel
-    # time = [float(line.split()[0]) for i, line in enumerate(lines) if i > 1]
-    # accel = [float(line.split()[1]) / mass for i, line in enumerate(lines) if i > 1]
+    # small_timesteps = np.linspace(time[i], time[len(time)-1], 9525)
+    # accel = np.interp(small_timesteps, time, accel)
+    # return time, accel
+    time = [float(line.split()[0]) for i, line in enumerate(lines) if i > 1]
+    accel = [float(line.split()[1]) / mass for i, line in enumerate(lines) if i > 1]
     return time, accel
 
 def get_rocket(path):
@@ -67,3 +69,19 @@ def get_rocket(path):
         for line in reader:
             rocket = line
     return dict([key, float(value)] for key, value in rocket.items())
+
+def get_motor_mass(time):
+   #from data sheet of H550
+    burn_time = 0.55
+    motor_mass = 0.316
+    prop_mass = 0.176
+    dry_mass = motor_mass - prop_mass
+   #linear interpolation of mass
+   #TODO approximate using N5800 fit
+    if time - time[0] < burn_time:
+        loss_rate = prop_mass / burn_time
+        motor_mass = motor_mass - loss_rate * time
+    else:
+        motor_mass = dry_mass
+        
+    return motor_mass
