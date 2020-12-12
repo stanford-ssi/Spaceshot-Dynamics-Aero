@@ -20,11 +20,11 @@ class Profile:
         t = np.linspace(0, self.motor.burn_time, len(self.motor.thrust))
         # TODO: double check with prop that polynomial fit is sufficient and ask abt degree
         thrust = np.polyfit(t, self.motor.thrust, 4)
-        thrust = np.poly1d(thrust)
+        force = np.poly1d(thrust) # TODO: subtract the drag and gravity
         
         # simple integration and Newton's second
         self.tt = np.linspace(0, self.length, timesteps)
-        self.accel = np.array([thrust(t) / (motor.mass(t) + rocket["Mass"]) \
+        self.accel = np.array([force(t) / (motor.mass(t) + rocket["Mass"]) \
             for t in self.tt])
         vel = np.array(integrate.cumtrapz(self.accel, x=self.tt, initial=0))
         self.vel = vel * np.cos(hangle)
@@ -63,8 +63,12 @@ class Profile:
         return self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * self.rocket['Surface Area'] * \
             self.rocket['Calipers'] * self.rocket['Diameter']) 
 
+    def dynamic_stab_crit(self):
+        #TODO: McCoy dynamics stability criterion
+        pass
+
     def spin(self):
-        # TODO: incorporate skin drag despin
+        # TODO: incorporate spin damping moment
         return self.init_spin
 
     def is_stable(self):
