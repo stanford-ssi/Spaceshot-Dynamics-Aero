@@ -1,5 +1,5 @@
 import csv
-from utility import read_csv
+from .utility import read_csv
 
 """
 Simple model for a solid rocket motor for mechanical simulations
@@ -44,9 +44,12 @@ def load_motor(spec, thrust_curve):
     motor = read_csv(spec)
 
     # get thrust values from txt file, usually found online
-    thrust_curve = open(thrust_curve, 'r')
-    time = [float(line.split()[0]) for i, line in enumerate(thrust_curve) if i > 1]
-    force = [float(line.split()[1]) for i, line in enumerate(thrust_curve) if i > 1]
+    time = []
+    force = []
+    with open(thrust_curve, 'r') as thrust_curve:
+        thrust_curve = list(thrust_curve) # allows you to iterate twice
+        time = [float(line.split()[0]) for i, line in enumerate(thrust_curve) if i > 1]
+        force = [float(line.split()[1]) for i, line in enumerate(thrust_curve) if i > 1]
 
     return Motor(motor["wet_mass"], motor["dry_mass"], motor["radius"], motor["length"], \
         force, width = motor["width"], burn_time=time[-1])

@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import integrate
-from utility import read_csv
+from .utility import read_csv
 
 """
 Simulates a spin-stabilized launch profile
@@ -24,11 +24,11 @@ class Profile:
         
         # simple integration and Newton's second
         self.tt = np.linspace(0, self.length, timesteps)
-        self.accel = np.array([force(t) / (motor.mass(t) + rocket["Mass"]) \
+        self.accel = np.array([force(t) / (self.motor.mass(t) + self.rocket["Mass"]) \
             for t in self.tt])
         vel = np.array(integrate.cumtrapz(self.accel, x=self.tt, initial=0))
-        self.vel = vel * np.cos(hangle)
-        self.altit = np.array(integrate.cumtrapz(vel, x=self.tt, initial=0))
+        self.vel = vel 
+        self.altit = np.array(integrate.cumtrapz(vel * np.cos(hangle), x=self.tt, initial=0))
 
     def rho(self):
         rho = []
@@ -58,18 +58,18 @@ class Profile:
         return np.array([self.rocket["I_x"] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
-    def stab_crit(self):
+    def gyro_stab_crit(self):
         # TODO: the number of calipers also changes as motor burns and CG changes, add fcn for this too
         return self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * self.rocket['Surface Area'] * \
             self.rocket['Calipers'] * self.rocket['Diameter']) 
 
     def dynamic_stab_crit(self):
         #TODO: McCoy dynamics stability criterion
-        pass
+        return np.ones(len(self.tt)) * self.init_spin
 
     def spin(self):
         # TODO: incorporate spin damping moment
-        return self.init_spin
+        return np.ones(len(self.tt)) * self.init_spin
 
     def is_stable(self):
         return self.stab_crit() < self.spin()
