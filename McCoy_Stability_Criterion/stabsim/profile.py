@@ -69,8 +69,36 @@ class Profile:
 
     def spin(self):
         # TODO: incorporate spin damping moment
-        return np.ones(len(self.tt)) * self.init_spin
+        # air density changes with altitude (it changes with season and temp too)
+        # using this model for now https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html
+        density = []
 
+        for altitude in self.altit:
+            if altitude < 11000:
+                temperature = 15.04 - .00649 * altitude
+                pressure = 101.29 * ((temperature + 273.1) / 288.08) ** 5.256
+            else if altitude >= 11000 and altitude < 25000:
+                temperature = -56.46
+                pressure = 22.65 * (2.718281828459045) ** (1.73 - .000157 * altitude)
+            else:
+                temperature = -131.21 + .00299 * altitude
+                pressure = 2.488 * ((temperature + 273.1) / 216.6) ** -11.388
+            density.append(pressure / (.2869 * (temperature + 273.1)))
+
+        
+        self.spin = [self.init_spin]
+        self.damping = []
+        #inertia gotten by adding component parts
+        inertia = np.add(ix(self), iz(self))
+        time = self.length / timesteps
+        #coefficient using https://www.hindawi.com/journals/ijae/2020/6043721/ approximated to -.013
+        
+        for i in range (0, timesteps, 1):
+            damping.append(.5 * density[i] * vel[i] * (self.rocket['Diameter'] ** 2) * self.rocket['Surface Area'] * self.spin[i] * -.013)
+            angAccel = damping[i] / inertia
+            spin.append(spin[i] + angAccel * time)            
+
+        return self.spin
     def is_stable(self):
         return self.stab_crit() < self.spin()
 
