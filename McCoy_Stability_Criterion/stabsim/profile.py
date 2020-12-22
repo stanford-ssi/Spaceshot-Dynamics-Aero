@@ -21,9 +21,11 @@ class Profile:
         # TODO: double check with prop that polynomial fit is sufficient and ask abt degree
         thrust = np.polyfit(t, self.motor.thrust, 4)
         force = np.poly1d(thrust) # TODO: subtract the drag and gravity
-        
+
         # simple integration and Newton's second
         self.tt = np.linspace(0, self.length, timesteps)
+        # Mass calcuations over time
+        self.mass = np.array([self.motor.mass(t) + self.rocket["Mass"] for t in self.tt])
         self.accel = np.array([force(t) / (self.motor.mass(t) + self.rocket["Mass"]) \
             for t in self.tt])
         vel = np.array(integrate.cumtrapz(self.accel, x=self.tt, initial=0))
@@ -60,12 +62,21 @@ class Profile:
 
     def gyro_stab_crit(self):
         # TODO: the number of calipers also changes as motor burns and CG changes, add fcn for this too
-        return self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * self.rocket['Surface Area'] * \
+        return self.vel / self.iz() * np.sqrt(2 * self.rho() * self.ix() * self.rocket['Surface Area'] * \
             self.rocket['Calipers'] * self.rocket['Diameter']) 
 
     def dynamic_stab_crit(self):
-        #TODO: McCoy dynamics stability criterion
-        return np.ones(len(self.tt)) * self.init_spin
+        # McCoy dynamics stability criterion in radians per second
+        # TODO: fill in values for coefficients
+        cm_alpha = # Pitching/rolling moment coeff
+        cl_alpha = # Lift force coeff
+        cd = # Drag coeff
+        cm_q = # Pitch damping moment due to transverse angular velocity
+        cm_alpha_dot = # Pitch damping moment coeff due to rate of change of angle of attack
+        cm_p_alpha = # Magnus moment coeff
+        return self.vel * np.sqrt(2 * self.rho() * self.rocket['Surface Area'] * self.rocket['Diameter'] * cm_alpha * self.ix()) * \
+            (cl_alpha - cd - (self.mass * self.rocket['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot)) / \
+                (2 * (self.iz() * cl_alpha + self.mass * self.rocket['Diameter'] ** 2 * cm_p_alpha))
 
     def spin(self):
         # TODO: incorporate spin damping moment
