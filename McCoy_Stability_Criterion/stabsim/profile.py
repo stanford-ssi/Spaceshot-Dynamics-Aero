@@ -6,7 +6,7 @@ from .utility import read_csv
 Simulates a spin-stabilized launch profile
 """
 class Profile:
-    def __init__(self, rocket, motor, init_spin, length=0, motor_pos=0, hangle=0, timesteps=50):
+    def __init__(self, rocket, motor, init_spin, launch_altit=0, length=0, motor_pos=0, hangle=0, timesteps=50):
         self.rocket = read_csv(rocket)
         self.motor = motor
         self.init_spin = init_spin
@@ -30,7 +30,7 @@ class Profile:
             for t in self.tt])
         vel = np.array(integrate.cumtrapz(self.accel, x=self.tt, initial=0))
         self.vel = vel 
-        self.altit = np.array(integrate.cumtrapz(vel * np.cos(hangle), x=self.tt, initial=0))
+        self.altit = np.array(integrate.cumtrapz(vel * np.cos(hangle), x=self.tt, initial=0)) + launch_altit
 
     def rho(self):
         temperature = -131.21 + .00299 * self.altit
@@ -52,22 +52,22 @@ class Profile:
             self.rocket['Calipers'] * self.rocket['Diameter']) 
 
     def dynamic_stab_crit(self):
-        # # McCoy dynamics stability criterion in radians per second
-        # # TODO: fill in values for coefficients
-        # cm_alpha = # Pitching/rolling moment coeff
-        # cl_alpha = # Lift force coeff
-        # cd = # Drag coeff
-        # cm_q = # Pitch damping moment due to transverse angular velocity
-        # cm_alpha_dot = # Pitch damping moment coeff due to rate of change of angle of attack
-        # cm_p_alpha = # Magnus moment coeff
-        # return self.vel * np.sqrt(2 * self.rho() * self.rocket['Surface Area'] * self.rocket['Diameter'] * cm_alpha * self.ix()) * \
-        #     (cl_alpha - cd - (self.mass * self.rocket['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot)) / \
-        #         (2 * (self.iz() * cl_alpha + self.mass * self.rocket['Diameter'] ** 2 * cm_p_alpha))
-        return self.init_spin * np.ones(len(self.tt))
+        # McCoy dynamics stability criterion in radians per second
+        # TODO: fill in values for coefficients
+        cm_alpha = 1 # Pitching/rolling moment coeff
+        cl_alpha = 1 # Lift force coeff
+        cd = 1 # Drag coeff
+        cm_q = 1 # Pitch damping moment due to transverse angular velocity
+        cm_alpha_dot = 1 # Pitch damping moment coeff due to rate of change of angle of attack
+        cm_p_alpha = 1 # Magnus moment coeff
+        dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * self.rocket['Surface Area'] * self.rocket['Diameter'] * cm_alpha * self.ix()) * \
+            (cl_alpha - cd - (self.mass * self.rocket['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot)) / \
+                (2 * (self.iz() * cl_alpha + self.mass * self.rocket['Diameter'] ** 2 * cm_p_alpha))
+        return np.abs(dyn_spin_crit)
 
     def spin(self):
         omega0 = self.init_spin
-        C_spin = -1
+        C_spin = -10
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()
