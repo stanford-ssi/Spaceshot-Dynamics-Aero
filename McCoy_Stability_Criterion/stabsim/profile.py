@@ -20,10 +20,12 @@ class Profile:
         t = np.linspace(0, self.motor.burn_time, len(self.motor.thrust))
         # TODO: double check with prop that polynomial fit is sufficient and ask abt degree
         thrust = np.polyfit(t, self.motor.thrust, 4)
-        force = np.poly1d(thrust) #- (self.motor.mass(t) + self.rocket["Mass"]) * 9.8# TODO: subtract the drag
-        
+        force = np.poly1d(thrust) # TODO: subtract the drag and gravity
+
         # simple integration and Newton's second
         self.tt = np.linspace(0, self.length, timesteps)
+        # Mass calcuations over time
+        self.mass = np.array([self.motor.mass(t) + self.rocket["Mass"] for t in self.tt])
         self.accel = np.array([force(t) / (self.motor.mass(t) + self.rocket["Mass"]) \
             for t in self.tt])
         vel = np.array(integrate.cumtrapz(self.accel, x=self.tt, initial=0))
@@ -50,12 +52,22 @@ class Profile:
             self.rocket['Calipers'] * self.rocket['Diameter']) 
 
     def dynamic_stab_crit(self):
-        #TODO: McCoy dynamics stability criterion
-        return np.ones(len(self.tt)) * self.init_spin
+        # # McCoy dynamics stability criterion in radians per second
+        # # TODO: fill in values for coefficients
+        # cm_alpha = # Pitching/rolling moment coeff
+        # cl_alpha = # Lift force coeff
+        # cd = # Drag coeff
+        # cm_q = # Pitch damping moment due to transverse angular velocity
+        # cm_alpha_dot = # Pitch damping moment coeff due to rate of change of angle of attack
+        # cm_p_alpha = # Magnus moment coeff
+        # return self.vel * np.sqrt(2 * self.rho() * self.rocket['Surface Area'] * self.rocket['Diameter'] * cm_alpha * self.ix()) * \
+        #     (cl_alpha - cd - (self.mass * self.rocket['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot)) / \
+        #         (2 * (self.iz() * cl_alpha + self.mass * self.rocket['Diameter'] ** 2 * cm_p_alpha))
+        return self.init_spin * np.ones(len(self.tt))
 
     def spin(self):
         omega0 = self.init_spin
-        C_spin = -0.013
+        C_spin = -1
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()
