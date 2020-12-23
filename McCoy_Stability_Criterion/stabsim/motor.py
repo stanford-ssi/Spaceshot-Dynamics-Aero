@@ -52,4 +52,4 @@ def load_motor(spec, thrust_curve):
         force = [float(line.split()[1]) for i, line in enumerate(thrust_curve) if i > 1]
 
     return Motor(motor["wet_mass"], motor["dry_mass"], motor["radius"], motor["length"], \
-        force, width = motor["width"], burn_time=time[-1])
+        force, width = motor["width"], burn_time=time[-1])  

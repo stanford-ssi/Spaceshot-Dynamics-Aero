@@ -1,12 +1,17 @@
-import sys
-sys.path.insert(0, 'path-to-top-foler')
+from context import stabsim
 
-from McCoy_Stability_Criterion.stabsim.motor import load_motor
-from McCoy_Stability_Criterion.stabsim.profile import Profile
-import McCoy_Stability_Criterion.stabsim.vis as vis
+from stabsim.motor import load_motor
+from stabsim.profile import Profile
+import stabsim.vis as vis
 
-H550 = load_motor('path-to-H550_dim.csv', \
-    'path-to-H550_thrust.txt')
-marvin = Profile('path-to-Marvin.csv', H550, 262)
+import os
+script_dir = os.path.join(os.path.dirname(__file__), '..')
+
+motor_dim = "data/H550_dim.csv"
+motor_thrust = "data/H550_thrust.txt"
+rocket = "data/Marvin.csv"
+
+H550 = load_motor(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
+marvin = Profile(os.path.join(script_dir, rocket), H550, 262)
 vis.kinematics(marvin)
 vis.spin(marvin)

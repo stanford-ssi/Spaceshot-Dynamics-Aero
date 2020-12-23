@@ -22,14 +22,16 @@ def spin(profile, gyro=True, dynamic=True):
     plt.ylabel('Spin (rad/s)')
 
     spin = profile.spin()
+    spin = spin.reshape(spin.shape[0],)
     plt.plot(profile.tt, spin, 'k', label='Expected Spin')
     if gyro:
         gyro_stab = profile.gyro_stab_crit()
+        print(gyro_stab.shape)
         plt.plot(profile.tt, gyro_stab, 'tab:blue', label='Gyroscopic Stability Threshold')
         plt.fill_between(profile.tt, 0, plt.ylim()[1], where=spin<gyro_stab, facecolor='red', alpha=0.5)
     if dynamic:
         dyn_stab = profile.dynamic_stab_crit()
         plt.plot(profile.tt, dyn_stab, 'tab:green', label='Dynamic Stability Threshold')
-        plt.fill_between(profile.tt, 0, plt.ylim()[1], where=spin<dyn_stab, facecolor='red', alpha=0.5)
+        # plt.fill_between(profile.tt, 0, plt.ylim()[1], where=spin<dyn_stab, facecolor='red', alpha=0.5)
 
     plt.show()
