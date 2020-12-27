@@ -18,19 +18,45 @@ class Profile:
 
         # thrust is set to polynomial fit to get equally spaced timesteps for subsequent calcs
         t = np.linspace(0, self.motor.burn_time, len(self.motor.thrust))
-        # TODO: double check with prop that polynomial fit is sufficient and ask abt degree
-        thrust = np.polyfit(t, self.motor.thrust, 4)
-        force = np.poly1d(thrust) # TODO: subtract the drag and gravity
-
         # simple integration and Newton's second
         self.tt = np.linspace(0, self.length, timesteps)
-        # Mass calcuations over time
         self.mass = np.array([self.motor.mass(t) + self.rocket["Mass"] for t in self.tt])
+        self.gravity = np.array([(self.rocket["Mass"] + self.motor.mass(t))* -9.80665 \
+            for t in self.tt])
+        # TODO: double check with prop that polynomial fit is sufficient and ask abt degree
+        thrust = np.polyfit(t, self.motor.thrust, 4)
+        self.thrust = thrust
+        force = np.poly1d(thrust) + self.gravity # TODO: subtract the drag and gravity
+
+        # Mass calcuations over time
         self.accel = np.array([force(t) / (self.motor.mass(t) + self.rocket["Mass"]) \
             for t in self.tt])
         vel = np.array(integrate.cumtrapz(self.accel, x=self.tt, initial=0))
         self.vel = vel 
         self.altit = np.array(integrate.cumtrapz(vel * np.cos(hangle), x=self.tt, initial=0)) + launch_altit
+        self.launch_altit = launch_altit
+
+    def odeint(self):
+        # Returns a list of [x, v] over t
+        z0 = [self.launch_altit, self.vel[0]]       # Initial condition
+        t = self.tt
+        z = integrate.odeint(self.model, z0, t)
+        return z
+
+    def model(self, z, t):
+        #Function that returs a list of (dxdt, dvdt) over t
+        # Hangle assumed to be 0
+        # Equations based on https://www.overleaf.com/project/5fe249e8a42b0068add612ab
+        x, v = z
+        dxdt = v
+        dvdt = self.thrust[t] / (self.mass[t]) + -9.80665 + self.drag[t] / (self.mass[t])
+        dzdt = [dxdt, dvdt]
+        return dzdt
+
+    def drag(self):
+        # ref_area and cd values missing
+        return np.array([self.cd * self.ref_area * self.gravity[t] * 0.5 * (self.vel[t] ** 2) * self.rho  \
+            for t in self.tt])
 
     def rho(self):
         temperature = -131.21 + .00299 * self.altit
