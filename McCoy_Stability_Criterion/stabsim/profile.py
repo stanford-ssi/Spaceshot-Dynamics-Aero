@@ -54,7 +54,7 @@ class Profile:
         return dzdt
 
     def drag(self):
-        # ref_area and cd values missing
+        # TODO: ref_area and cd
         return np.array([self.cd * self.ref_area * self.gravity[t] * 0.5 * (self.vel[t] ** 2) * self.rho  \
             for t in self.tt])
 
