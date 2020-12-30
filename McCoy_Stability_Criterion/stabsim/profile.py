@@ -33,6 +33,20 @@ class Profile:
         self.altit = np.array(integrate.cumtrapz(vel * np.cos(hangle), x=self.tt, initial=0)) + launch_altit
 
     def rho(self):
+        rho = []
+
+        for altit in self.altit:
+            if altit < 11000:
+                temperature = 15.04 - .00649 * altit
+                pressure = 101.29 * ((temperature + 273.1) / 288.08) ** 5.256
+            elif altit >= 11000 and altit < 25000:
+                temperature = -56.46
+                pressure = 22.65 * (2.718281828459045) ** (1.73 - .000157 * altit)
+            else:
+                temperature = -131.21 + .00299 * altit
+                pressure = 2.488 * ((temperature + 273.1) / 216.6) ** -11.388
+            rho.append(pressure / (.2869 * (temperature + 273.1)))
+        return np.array(rho)
         temperature = -131.21 + .00299 * self.altit
         pressure = 2.488 * ((temperature + 273.1) / 216.6) ** -11.388
         rho = pressure / (0.2869 * (temperature + 273.1))
