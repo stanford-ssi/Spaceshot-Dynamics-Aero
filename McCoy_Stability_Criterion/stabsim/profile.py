@@ -13,53 +13,42 @@ class Profile:
         self.length = length
         # assume a length==0 implies simulation should end at end of motor burn
         if self.length == 0:
-            self.length = self.motor.burn_time
+            self.length = self.motor.t[-1]
         self.motor_pos = motor_pos
 
         # thrust is set to polynomial fit to get equally spaced timesteps for subsequent calcs
-        t = np.linspace(0, self.motor.burn_time, len(self.motor.thrust))
         # simple integration and Newton's second
         self.tt = np.linspace(0, self.length, timesteps)
         self.mass = np.array([self.motor.mass(t) + self.rocket["Mass"] for t in self.tt])
-        self.gravity = np.array([(self.rocket["Mass"] + self.motor.mass(t))* -9.80665 \
-            for t in self.tt])
-        # TODO: double check with prop that polynomial fit is sufficient and ask abt degree
-        thrust = np.polyfit(t, self.motor.thrust, 4)
-        self.thrust = thrust
-        force = np.poly1d(thrust) + self.gravity # TODO: subtract the drag and gravity
 
         # Mass calcuations over time
-        self.accel = np.array([force(t) / (self.motor.mass(t) + self.rocket["Mass"]) \
-            for t in self.tt])
-        vel = np.array(integrate.cumtrapz(self.accel, x=self.tt, initial=0))
-        self.vel = vel 
-        self.altit = np.array(integrate.cumtrapz(vel * np.cos(hangle), x=self.tt, initial=0)) + launch_altit
-        self.launch_altit = launch_altit
-
-    def odeint(self):
-        # Returns a list of [x, v] over t
-        z0 = [self.launch_altit, self.vel[0]]       # Initial condition
+        z0 = [launch_altit, 0]       # Initial condition
         t = self.tt
-        z = integrate.odeint(self.model, z0, t)
-        return z
 
-    def model(self, z, t):
-        #Function that returs a list of (dxdt, dvdt) over t
-        # Hangle assumed to be 0
-        # Equations based on https://www.overleaf.com/project/5fe249e8a42b0068add612ab
-        x, v = z
-        dxdt = v
-        dvdt = self.thrust[t] / (self.mass[t]) + -9.80665 + self.drag[t] / (self.mass[t])
-        dzdt = [dxdt, dvdt]
-        return dzdt
+        def model(z0, t):
+            #Function that returs a list of (dxdt, dvdt) over t
+            # Hangle assumed to be 0
+            # Equations based on https://www.overleaf.com/project/5fe249e8a42b0068add612ab
+            x, v = z0
+            dxdt = v
+            ind = np.abs(self.tt - t).argmin()
+            dvdt = self.motor.thrust(t) / (self.mass[ind]) + -9.80665 + self.drag(ind, x, v, cd=10) / (self.mass[ind])
+            dzdt = [dxdt, dvdt]
+            return dzdt
+        
+        z = integrate.odeint(model, z0, t)
+        self.altit = z[:,0]
+        self.vel = z[:, 1]
 
-    def drag(self):
+    def drag(self, t, x, v, cd = 0):
         # TODO: ref_area and cd
-        return np.array([self.cd * self.ref_area * self.gravity[t] * 0.5 * (self.vel[t] ** 2) * self.rho  \
-            for t in self.tt])
+        ref_area = np.pi / 4 * (self.rocket['Diameter'] ** 2)
+        return -cd * ref_area  * 0.5 * (v ** 2) * self.rho(x)
 
-    def rho(self):
-        temperature = -131.21 + .00299 * self.altit
+    def rho(self, x=-1):
+        if x == -1:
+            x = self.altit
+        temperature = -131.21 + .00299 * x
         pressure = 2.488 * ((temperature + 273.1) / 216.6) ** -11.388
         rho = pressure / (0.2869 * (temperature + 273.1))
         return rho
@@ -97,7 +86,6 @@ class Profile:
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()
-
             ref_area = np.pi / 4 * (profile.rocket['Diameter'] ** 2)
             domegadt = 0.5 * C * profile.rho()[ind] * profile.vel[ind] * ref_area * omega * profile.rocket['Diameter']
             return domegadt

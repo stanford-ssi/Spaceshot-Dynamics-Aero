@@ -1,5 +1,6 @@
 import csv
 from .utility import read_csv
+import numpy as np
 
 """
 Simple model for a solid rocket motor for mechanical simulations
@@ -11,8 +12,9 @@ class Motor:
         self.radius = radius
         self.width = width
         self.length = length
-        self.thrust = thrust_curve
-        self.burn_time = burn_time
+        self.t = np.linspace(0, burn_time, len(thrust_curve))
+        thrust = np.polyfit(self.t, thrust_curve, 4)
+        self.thrust = np.poly1d(thrust)
 
     def iz(self, time):
         max_iz = 0.5 * self.wet_mass * self.radius**2
@@ -20,7 +22,7 @@ class Motor:
         
         # values extrapolated through simple linear approximation
         # TODO: talk with prop about how accurate this is
-        linear_approx = (max_iz - min_iz) * ((self.burn_time - time) / self.burn_time) 
+        linear_approx = (max_iz - min_iz) * ((self.t[-1] - time) / self.t[-1]) 
         return max(linear_approx, min_iz)
 
     def ix(self, time):
@@ -30,13 +32,13 @@ class Motor:
 
         # values extrapolated through simple linear approximation
         # TODO: talk with prop about how accurate this is
-        linear_approx = (max_ix - min_ix) * ((self.burn_time - time) / self.burn_time)
+        linear_approx = (max_ix - min_ix) * ((self.t[-1] - time) / self.t[-1])
         return max(linear_approx, min_ix)
 
     def mass(self, time):        
         # values extrapolated through simple linear approximation
         # TODO: talk with prop about how accurate this is
-        linear_approx = (self.wet_mass - self.dry_mass) * ((self.burn_time - time) / self.burn_time)
+        linear_approx = (self.wet_mass - self.dry_mass) * ((self.t[-1] - time) / self.t[-1])
         return max(linear_approx, self.dry_mass) 
 
 def load_motor(spec, thrust_curve):
