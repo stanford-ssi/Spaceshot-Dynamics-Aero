@@ -12,6 +12,6 @@ motor_thrust = "data/H550_thrust.txt"
 rocket = "data/Marvin.csv"
 
 H550 = load_motor(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
-marvin = Profile(os.path.join(script_dir, rocket), H550, 262)
+marvin = Profile(os.path.join(script_dir, rocket), H550, 262, length=6, timesteps=100)
 vis.kinematics(marvin)
-vis.spin(marvin)
+vis.spin(marvin, label_end=True)

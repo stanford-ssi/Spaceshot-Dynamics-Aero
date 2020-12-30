@@ -7,35 +7,49 @@ Simulates a spin-stabilized launch profile
 """
 class Profile:
     def __init__(self, rocket, motor, init_spin, launch_altit=0, length=0, motor_pos=0, hangle=0, timesteps=50):
+        # Static constants #
         self.rocket = read_csv(rocket)
         self.motor = motor
         self.init_spin = init_spin
-        self.length = length
-        # assume a length==0 implies simulation should end at end of motor burn
-        if self.length == 0:
-            self.length = self.motor.burn_time
         self.motor_pos = motor_pos
+        
 
-        # thrust is set to polynomial fit to get equally spaced timesteps for subsequent calcs
-        t = np.linspace(0, self.motor.burn_time, len(self.motor.thrust))
-        # TODO: double check with prop that polynomial fit is sufficient and ask abt degree
-        thrust = np.polyfit(t, self.motor.thrust, 4)
-        force = np.poly1d(thrust) # TODO: subtract the drag and gravity
-
-        # simple integration and Newton's second
-        self.tt = np.linspace(0, self.length, timesteps)
-        # Mass calcuations over time
+        # Time varying constants #
+        if length == 0: # assume a length==0 implies simulation should end at end of motor burn
+            length = self.motor.t[-1]
+        self.tt = np.linspace(0, length, timesteps)
         self.mass = np.array([self.motor.mass(t) + self.rocket["Mass"] for t in self.tt])
-        self.accel = np.array([force(t) / (self.motor.mass(t) + self.rocket["Mass"]) \
-            for t in self.tt])
-        vel = np.array(integrate.cumtrapz(self.accel, x=self.tt, initial=0))
-        self.vel = vel 
-        self.altit = np.array(integrate.cumtrapz(vel * np.cos(hangle), x=self.tt, initial=0)) + launch_altit
 
-    def rho(self):
+
+        # Solve eqns of motion #
+        z0 = [launch_altit, 0] # Initial condition
+        t = self.tt
+
+        def model(z0, t):
+            #Function that returs a list of (dxdt, dvdt) over t
+            # Equations based on https://www.overleaf.com/project/5fe249e8a42b0068add612ab
+            x, v = z0
+            dxdt = v
+            ind = np.abs(self.tt - t).argmin()
+            dvdt = self.motor.thrust(t) / (self.mass[ind]) + -9.80665 + \
+                self.drag(ind, x * np.cos(hangle), v, cd=1) / (self.mass[ind])
+            dzdt = [dxdt, dvdt]
+            return dzdt
+        
+        z = integrate.odeint(model, z0, t)
+        self.altit = z[:,0] * np.cos(hangle)
+        self.vel = z[:, 1]
+
+    def drag(self, t, x, v, cd = 0):
+        ref_area = np.pi / 4 * (self.rocket['Diameter'] ** 2)
+        return -cd * ref_area  * 0.5 * (v ** 2) * self.rho([x])
+
+    def rho(self, x=-1):
+        if x == -1:
+            x = self.altit
+
         rho = []
-
-        for altit in self.altit:
+        for altit in x:
             if altit < 11000:
                 temperature = 15.04 - .00649 * altit
                 pressure = 101.29 * ((temperature + 273.1) / 288.08) ** 5.256
@@ -46,11 +60,8 @@ class Profile:
                 temperature = -131.21 + .00299 * altit
                 pressure = 2.488 * ((temperature + 273.1) / 216.6) ** -11.388
             rho.append(pressure / (.2869 * (temperature + 273.1)))
+        
         return np.array(rho)
-        temperature = -131.21 + .00299 * self.altit
-        pressure = 2.488 * ((temperature + 273.1) / 216.6) ** -11.388
-        rho = pressure / (0.2869 * (temperature + 273.1))
-        return rho
 
     def iz(self):
         return np.array([self.rocket["I_z"] + self.motor.iz(time) + self.motor.mass(time) * self.motor_pos**2 \
@@ -60,13 +71,20 @@ class Profile:
         return np.array([self.rocket["I_x"] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
+    """
+    Gyroscopic stability criterion in radians per second
+    Stability of moving spinning top
+    """
     def gyro_stab_crit(self):
         # TODO: the number of calipers also changes as motor burns and CG changes, add fcn for this too
         return self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * self.rocket['Surface Area'] * \
             self.rocket['Calipers'] * self.rocket['Diameter']) 
 
+    """
+    McCoy dynamics stability criterion in radians per second
+    Incorporates aerodynamic effects
+    """
     def dynamic_stab_crit(self):
-        # McCoy dynamics stability criterion in radians per second
         # TODO: fill in values for coefficients
         cm_alpha = 1 # Pitching/rolling moment coeff
         cl_alpha = 1 # Lift force coeff
@@ -81,11 +99,10 @@ class Profile:
 
     def spin(self):
         omega0 = self.init_spin
-        C_spin = -10
+        C_spin = -1
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()
-
             ref_area = np.pi / 4 * (profile.rocket['Diameter'] ** 2)
             domegadt = 0.5 * C * profile.rho()[ind] * profile.vel[ind] * ref_area * omega * profile.rocket['Diameter']
             return domegadt
@@ -93,8 +110,10 @@ class Profile:
         return integrate.odeint(spin_damping, omega0, self.tt, args=(C_spin, self))
 
     def is_stable(self):
-        return self.stab_crit() < self.spin()
+        return all(self.spin() > self.gyro_stab_crit()) and \
+            all(self.spin() > self.dynamic_stab_crit())
 
     def min_spin(self):
-        # TODO: incorporate skin drag despin
-        return np.max(self.stab_crit())
+        gyro_max = np.max(self.gyro_stab_crit())
+        dyn_max = np.max(self.dynamic_stab_crit())
+        return max(gyro_max, dyn_max)
