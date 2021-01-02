@@ -21,7 +21,8 @@ class Motor:
                 return thrust_curve(t)
             return 0
         self.thrust = thrust
-
+        
+    # Moment of inertia along the axis of symmetry of rocket
     def iz(self, time):
         max_iz = 0.5 * self.wet_mass * self.radius**2
         min_iz = 0.5 * self.dry_mass * (self.radius**2 + (self.radius - self.width)**2)
@@ -31,6 +32,7 @@ class Motor:
         linear_approx = (max_iz - min_iz) * ((self.t[-1] - time) / self.t[-1]) 
         return max(linear_approx, min_iz)
 
+    # Moment of inertia not along axis of symmetry of rocket
     def ix(self, time):
         max_ix = 1 / 12 * self.wet_mass * (3 * self.radius**2 + self.length**2)
         min_ix = 1 / 12 * self.dry_mass * (3 * (self.radius**2 + (self.radius - self.width)**2) \
