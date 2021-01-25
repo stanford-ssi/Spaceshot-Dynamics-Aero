@@ -32,7 +32,7 @@ class Profile:
             dxdt = v
             ind = np.abs(self.tt - t).argmin()
             dvdt = self.motor.thrust(t) / (self.mass[ind]) + -9.80665 + \
-                self.drag(ind, x * np.cos(hangle), v, cd=1) / (self.mass[ind])
+                self.drag(ind, x * np.cos(hangle), v, cd=0.6) / (self.mass[ind])
             dzdt = [dxdt, dvdt]
             return dzdt
         
@@ -71,6 +71,9 @@ class Profile:
         return np.array([self.rocket["I_x"] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
+    def cd(self, vel):
+        pass
+
     """
     Gyroscopic stability criterion in radians per second
     Stability of moving spinning top
@@ -86,20 +89,20 @@ class Profile:
     """
     def dynamic_stab_crit(self):
         # TODO: fill in values for coefficients
-        cm_alpha = 1 # Pitching/rolling moment coeff
+        cm_alpha = 3.5 # Pitching/rolling moment coeff
         cl_alpha = 1 # Lift force coeff
         cd = 1 # Drag coeff
-        cm_q = 1 # Pitch damping moment due to transverse angular velocity
-        cm_alpha_dot = 1 # Pitch damping moment coeff due to rate of change of angle of attack
+        cm_q = -1 # Pitch damping moment due to transverse angular velocity
+        cm_alpha_dot = -1 # Pitch damping moment coeff due to rate of change of angle of attack
         cm_p_alpha = 1 # Magnus moment coeff
         dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * self.rocket['Surface Area'] * self.rocket['Diameter'] * cm_alpha * self.ix()) * \
             (cl_alpha - cd - (self.mass * self.rocket['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot)) / \
                 (2 * (self.iz() * cl_alpha + self.mass * self.rocket['Diameter'] ** 2 * cm_p_alpha))
-        return np.abs(dyn_spin_crit)
+        return dyn_spin_crit
 
     def spin(self):
         omega0 = self.init_spin
-        C_spin = -1
+        C_spin = -1 
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()

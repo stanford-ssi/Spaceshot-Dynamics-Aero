@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def kinematics(profile, rho=True):
     end_burn = profile.motor.t[-1]
@@ -41,4 +42,24 @@ def spin(profile, gyro=True, dynamic=True, label_end=False):
         plt.fill_between(profile.tt, 0, plt.ylim()[1], where=spin<dyn_stab, facecolor='red', alpha=0.5)
 
     plt.legend(loc='best')
+    plt.show()
+
+def motor(motor, timesteps=100):
+    time = motor.t
+
+    plt.subplot(311)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Mass (kg)')
+    plt.plot(time, [motor.mass(t) for t in time])
+
+    plt.subplot(312)
+    plt.xlabel('Time (s)')
+    plt.ylabel('I_x (kg*m/s)')
+    plt.plot(time, [motor.ix(t) for t in time])
+
+    plt.subplot(313)
+    plt.xlabel('Time (s)')
+    plt.ylabel('I_z (kg*m/s)')
+    plt.plot(time, [motor.iz(t) for t in time])
+
     plt.show()

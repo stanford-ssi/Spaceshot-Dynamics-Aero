@@ -1,7 +1,6 @@
 from context import stabsim
 
 from stabsim.motor import load_motor
-from stabsim.profile import Profile
 import stabsim.vis as vis
 
 import os
@@ -12,6 +11,4 @@ motor_thrust = "data/H550_thrust.txt"
 rocket = "data/Marvin.csv"
 
 H550 = load_motor(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
-marvin = Profile(os.path.join(script_dir, rocket), H550, 262, launch_altit=26000, length=25, timesteps=100)
-vis.kinematics(marvin)
-vis.spin(marvin)
+vis.motor(H550)

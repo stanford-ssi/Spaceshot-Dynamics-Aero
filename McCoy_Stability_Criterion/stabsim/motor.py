@@ -28,7 +28,7 @@ class Motor:
         
         # values extrapolated through simple linear approximation
         # TODO: talk with prop about how accurate this is
-        linear_approx = (max_iz - min_iz) * ((self.t[-1] - time) / self.t[-1]) 
+        linear_approx = (max_iz - min_iz) * ((self.t[-1] - time) / self.t[-1]) + min_iz
         return max(linear_approx, min_iz)
 
     def ix(self, time):
@@ -37,14 +37,14 @@ class Motor:
             + self.length**2)
 
         # values extrapolated through simple linear approximation
-        # TODO: talk with prop about how accurate this is
-        linear_approx = (max_ix - min_ix) * ((self.t[-1] - time) / self.t[-1])
+        # TODO: talk with prop about how accurate this is 
+        linear_approx = (max_ix - min_ix) * ((self.t[-1] - time) / self.t[-1]) + min_ix
         return max(linear_approx, min_ix)
 
     def mass(self, time):        
         # values extrapolated through simple linear approximation
         # TODO: talk with prop about how accurate this is
-        linear_approx = (self.wet_mass - self.dry_mass) * ((self.t[-1] - time) / self.t[-1])
+        linear_approx = (self.wet_mass - self.dry_mass) * ((self.t[-1] - time) / self.t[-1]) + self.dry_mass
         return max(linear_approx, self.dry_mass) 
 
 def load_motor(spec, thrust_curve):
