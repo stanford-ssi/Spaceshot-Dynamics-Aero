@@ -72,6 +72,7 @@ class Profile:
             for time in self.tt])
 
     def cd(self, vel):
+        # TODO: do this lol
         pass
 
     """
@@ -88,10 +89,9 @@ class Profile:
     Incorporates aerodynamic effects
     """
     def dynamic_stab_crit(self):
-        # TODO: fill in values for coefficients
         cm_alpha = 3.5 # Pitching/rolling moment coeff
         cl_alpha = 1 # Lift force coeff
-        cd = 1 # Drag coeff
+        cd = 0.6 # Drag coeff
         cm_q = -1 # Pitch damping moment due to transverse angular velocity
         cm_alpha_dot = -1 # Pitch damping moment coeff due to rate of change of angle of attack
         cm_p_alpha = 1 # Magnus moment coeff

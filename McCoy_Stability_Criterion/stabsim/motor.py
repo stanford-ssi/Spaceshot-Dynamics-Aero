@@ -38,7 +38,6 @@ class Motor:
     # Moment of inertia not along axis of symmetry of rocket
     def ix(self, time):
         ix_dry = 2 * (0.125 * self.dry_mass * self.radius**2 + 0.5 * self.dry_mass * (self.length/2)**2)  # 2 thin disks (ix = 1/4(dry mass/2)r^2) on either end, with parallel axis theorem ((dry mass/2)d^2)
-        (1/12) * self.wet_mass_variable(time) * (3 * (self.radius**2 + self.inner_radius(time)**2))
         ix_wet = max((1/12) * self.wet_mass_variable(time) * (3 * (self.radius**2 + self.inner_radius(time)**2) + self.length**2), 0) #cylinder with hole in center
         return ix_dry + ix_wet
 
