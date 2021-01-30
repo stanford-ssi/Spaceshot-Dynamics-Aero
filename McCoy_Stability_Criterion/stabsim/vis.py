@@ -63,3 +63,14 @@ def motor(motor, timesteps=100):
     plt.plot(time, [motor.iz(t) for t in time])
 
     plt.show()
+
+def mass(profile):
+    end_burn = profile.motor.t[-1]
+    
+    plt.xlabel('Time (s)')
+    plt.ylabel('Mass (kg)')
+    plt.plot(profile.tt, profile.mass)
+    plt.axvline(end_burn, color='grey')
+
+    plt.show()
+

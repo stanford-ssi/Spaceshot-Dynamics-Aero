@@ -89,14 +89,16 @@ class Profile:
     """
     def dynamic_stab_crit(self):
         # TODO: fill in values for coefficients
-        cm_alpha = 3.5 # Pitching/rolling moment coeff
-        cl_alpha = 1 # Lift force coeff
-        cd = 1 # Drag coeff
-        cm_q = -1 # Pitch damping moment due to transverse angular velocity
-        cm_alpha_dot = -1 # Pitch damping moment coeff due to rate of change of angle of attack
+        # The following coefficients were received from: https://www.hindawi.com/journals/ijae/2020/6043721/
+        cm_alpha = 4 # Overturning (a.k.a. pitching/rolling) moment coeff (Figure 6e)
+        cl_alpha = 2.5 # Lift force coeff (Figure 6c)
+        cd = 0.6 # Drag coeff (Figure 5)
+        
+        cm_q = 0 # Pitch damping moment due to transverse angular velocity
+        cm_alpha_dot = -100 # Pitch damping moment coeff due to rate of change of angle of attack
         cm_p_alpha = 1 # Magnus moment coeff
         dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * self.rocket['Surface Area'] * self.rocket['Diameter'] * cm_alpha * self.ix()) * \
-            (cl_alpha - cd - (self.mass * self.rocket['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot)) / \
+            (cl_alpha - cd - ((self.mass * self.rocket['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot))) / \
                 (2 * (self.iz() * cl_alpha + self.mass * self.rocket['Diameter'] ** 2 * cm_p_alpha))
         return dyn_spin_crit
 
