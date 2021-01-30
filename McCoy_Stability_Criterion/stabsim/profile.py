@@ -71,7 +71,7 @@ class Profile:
         return np.array([self.rocket["I_x"] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
-    def cd(self, vel):
+    def calipers(self, vel):
         # TODO: do this lol
         pass
 
@@ -94,7 +94,6 @@ class Profile:
         cm_alpha = 4 # Overturning (a.k.a. pitching/rolling) moment coeff (Figure 6e)
         cl_alpha = 2.5 # Lift force coeff (Figure 6c)
         cd = 0.6 # Drag coeff (Figure 5)
-        
         cm_q = 0 # Pitch damping moment due to transverse angular velocity
         cm_alpha_dot = -100 # Pitch damping moment coeff due to rate of change of angle of attack
         cm_p_alpha = 1 # Magnus moment coeff
