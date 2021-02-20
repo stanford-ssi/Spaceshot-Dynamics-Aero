@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import integrate
 from .utility import read_csv
+import matplotlib.pyplot as mpl
 
 """
 Simulates a spin-stabilized launch profile
@@ -104,14 +105,13 @@ class Profile:
 
     def spin(self):
         omega0 = self.init_spin
-        C_spin = -1 
+        C_spin = -.06
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()
             ref_area = np.pi / 4 * (profile.rocket['Diameter'] ** 2)
             domegadt = 0.5 * C * profile.rho()[ind] * profile.vel[ind] * ref_area * omega * profile.rocket['Diameter']
             return domegadt
-
         return integrate.odeint(spin_damping, omega0, self.tt, args=(C_spin, self))
 
     def is_stable(self):
