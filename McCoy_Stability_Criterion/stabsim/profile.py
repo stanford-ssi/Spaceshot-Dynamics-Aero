@@ -8,7 +8,7 @@ Simulates a spin-stabilized launch profile
 class Profile:
     def __init__(self, rocket, motor, init_spin, launch_altit=0, length=0, motor_pos=0, hangle=0, timesteps=50):
         # Static constants #
-        self.rocket = read_csv(rocket)
+        self.rocket = rocket
         self.motor = motor
         self.init_spin = init_spin
         self.motor_pos = motor_pos
@@ -18,7 +18,7 @@ class Profile:
         if length == 0: # assume a length==0 implies simulation should end at end of motor burn
             length = self.motor.t[-1]
         self.tt = np.linspace(0, length, timesteps)
-        self.mass = np.array([self.motor.mass(t) + self.rocket["Mass"] for t in self.tt])
+        self.mass = np.array([self.motor.mass(t) + self.rocket.static_params["Mass"] for t in self.tt])
 
 
         # Solve eqns of motion #
@@ -41,7 +41,7 @@ class Profile:
         self.vel = z[:, 1]
 
     def drag(self, t, x, v, cd = 0):
-        ref_area = np.pi / 4 * (self.rocket['Diameter'] ** 2)
+        ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
         return -cd * ref_area  * 0.5 * (v ** 2) * self.rho([x])
 
     def rho(self, x=-1):
@@ -64,14 +64,14 @@ class Profile:
         return np.array(rho)
 
     def iz(self):
-        return np.array([self.rocket["I_z"] + self.motor.iz(time) + self.motor.mass(time) * self.motor_pos**2 \
+        return np.array([self.rocket.static_params["I_z"] + self.motor.iz(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
     def ix(self):
-        return np.array([self.rocket["I_x"] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
+        return np.array([self.rocket.static_params["I_x"] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
-    def calipers(self, vel):
+    def c_m_pa(self, vel):
         # TODO: do this lol
         pass
 
@@ -81,8 +81,8 @@ class Profile:
     """
     def gyro_stab_crit(self):
         # TODO: the number of calipers also changes as motor burns and CG changes, add fcn for this too
-        return self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * self.rocket['Surface Area'] * \
-            self.rocket['Calipers'] * self.rocket['Diameter']) 
+        return self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * self.rocket.static_params['Surface Area'] * \
+            self.rocket.static_params['Calipers'] * self.rocket.static_params['Diameter']) 
 
     """
     McCoy dynamics stability criterion in radians per second
@@ -95,16 +95,16 @@ class Profile:
         cl_alpha = 2.5 # Lift force coeff (Figure 6c)
         cd = 0.6 # Drag coeff (Figure 5)
         cm_q = 0 # Pitch damping moment due to transverse angular velocity
-        cm_alpha_dot = -100 # Pitch damping moment coeff due to rate of change of angle of attack
+        cm_alpha_dot = -50 # Pitch damping moment coeff due to rate of change of angle of attack
         cm_p_alpha = 1 # Magnus moment coeff
-        dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * self.rocket['Surface Area'] * self.rocket['Diameter'] * cm_alpha * self.ix()) * \
-            (cl_alpha - cd - ((self.mass * self.rocket['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot))) / \
-                (2 * (self.iz() * cl_alpha + self.mass * self.rocket['Diameter'] ** 2 * cm_p_alpha))
+        dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * self.rocket.static_params['Surface Area'] * self.rocket.static_params['Diameter'] * cm_alpha * self.ix()) * \
+            (cl_alpha - cd - ((self.mass * self.rocket.static_params['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot))) / \
+                (2 * (self.iz() * cl_alpha + self.mass * self.rocket.static_params['Diameter'] ** 2 * cm_p_alpha))
         return dyn_spin_crit
 
     def spin(self):
         omega0 = self.init_spin
-        C_spin = -1 
+        C_spin = -1
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()
