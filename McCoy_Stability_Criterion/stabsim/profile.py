@@ -10,15 +10,12 @@ Simulates a spin-stabilized launch profile
 class Profile:
     def __init__(self, rocket, motor, init_spin, launch_altit=0, length=0, motor_pos=0, hangle=0, timesteps=50):
         # Static constants #
-<<<<<<< HEAD
-        self.rocket = rocket
-=======
         self.rocket = rocket # This should be from the Rocket class
->>>>>>> c5f8fd9fcfc79d0fed80d0b8ec9d638068050ce0
         self.motor = motor
         self.init_spin = init_spin
         self.motor_pos = motor_pos
-        
+        self.aoa = hangle
+
 
         # Time varying constants #
         if length == 0: # assume a length==0 implies simulation should end at end of motor burn
@@ -46,11 +43,10 @@ class Profile:
         self.altit = z[:,0] * np.cos(hangle)
         self.vel = z[:, 1]
 
+        self.rocket.update_coeffs(self.vel, self.aoa, self.altit, self.mass)
+
     def drag(self, t, x, v, cd = 0):
-<<<<<<< HEAD
-=======
-        cd = self.rocket.cd()
->>>>>>> c5f8fd9fcfc79d0fed80d0b8ec9d638068050ce0
+        cd = self.rocket.get_cd()
         ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
         return -cd * ref_area  * 0.5 * (v ** 2) * self.rho([x])
 
@@ -81,56 +77,33 @@ class Profile:
         return np.array([self.rocket.static_params["I_x"] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
-    def c_m_pa(self, vel):
-        # TODO: do this lol
-        pass
-
     """
     Gyroscopic stability criterion in radians per second
     Stability of moving spinning top
     """
     def gyro_stab_crit(self):
-        # TODO: the number of calipers also changes as motor burns and CG changes, add fcn for this too
         return self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * self.rocket.static_params['Surface Area'] * \
-            self.rocket.static_params['Calipers'] * self.rocket.static_params['Diameter']) 
+            self.rocket.get_cm_alpha() * self.rocket.static_params['Diameter']) 
 
     """
     McCoy dynamics stability criterion in radians per second
     Incorporates aerodynamic effects
     """
     def dynamic_stab_crit(self):
-        # TODO: fill in values for coefficients
-<<<<<<< HEAD
-        # The following coefficients were received from: https://www.hindawi.com/journals/ijae/2020/6043721/
-        cm_alpha = 4 # Overturning (a.k.a. pitching/rolling) moment coeff (Figure 6e)
-        cl_alpha = 2.5 # Lift force coeff (Figure 6c)
-        cd = 0.6 # Drag coeff (Figure 5)
-        cm_q = 0 # Pitch damping moment due to transverse angular velocity
-        cm_alpha_dot = -50 # Pitch damping moment coeff due to rate of change of angle of attack
-        cm_p_alpha = 1 # Magnus moment coeff
-        dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * self.rocket.static_params['Surface Area'] * self.rocket.static_params['Diameter'] * cm_alpha * self.ix()) * \
-            (cl_alpha - cd - ((self.mass * self.rocket.static_params['Diameter'] ** 2 / self.ix()) * (cm_q + cm_alpha_dot))) / \
-=======
-
-        cm_alpha = self.rocket.cm_alpha() # Overturning (a.k.a. pitching/rolling) moment coeff
-        cl_alpha = self.rocket.cl_alpha() # Lift force coeff
-        cd = self.rocket.cd() # Drag coeff
-        cm_alpha_dot_plus_cm_q = self.rocket.cm_alpha_dot_plus_cm_q() # Pitch damping moment coefficient (due to rate of change of angle of attack plus tranverse angular velocity)
-        cm_p_alpha = self.rocket.cm_p_alpha() # Magnus moment coeff
+        cm_alpha = self.rocket.get_cm_alpha() # Overturning (a.k.a. pitching/rolling) moment coeff
+        cl_alpha = self.rocket.get_cl_alpha() # Lift force coeff
+        cd = self.rocket.get_cd() # Drag coeff
+        cm_alpha_dot_plus_cm_q = self.rocket.get_cm_alpha_dot_plus_cm_q() # Pitch damping moment coefficient (due to rate of change of angle of attack plus tranverse angular velocity)
+        cm_p_alpha = self.rocket.get_cm_p_alpha() # Magnus moment coeff
 
         dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * self.rocket.static_params['Surface Area'] * self.rocket.static_params['Diameter'] * cm_alpha * self.ix()) * \
             (cl_alpha - cd - ((self.mass * self.rocket.static_params['Diameter'] ** 2 / self.ix()) * (cm_alpha_dot_plus_cm_q))) / \
->>>>>>> c5f8fd9fcfc79d0fed80d0b8ec9d638068050ce0
                 (2 * (self.iz() * cl_alpha + self.mass * self.rocket.static_params['Diameter'] ** 2 * cm_p_alpha))
         return dyn_spin_crit
 
     def spin(self):
         omega0 = self.init_spin
-<<<<<<< HEAD
-        C_spin = -1
-=======
-        C_spin = self.rocket.c_spin()
->>>>>>> c5f8fd9fcfc79d0fed80d0b8ec9d638068050ce0
+        C_spin = self.rocket.get_c_spin()
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()

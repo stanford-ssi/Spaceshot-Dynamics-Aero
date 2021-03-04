@@ -14,6 +14,6 @@ rocket = "data/Hitchiker.csv"
 hitchhiker_body = Rocket(os.path.join(script_dir, rocket))
 
 N5800 = load_motor(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
-hitchhiker = Profile(hitchhiker_body, N5800, 262, launch_altit=26000, length=25, timesteps=100)
+hitchhiker = Profile(hitchhiker_body, N5800, 366, launch_altit=29000, length=5, timesteps=100)
 vis.kinematics(hitchhiker)
-vis.spin(hitchhiker)
+vis.spin(hitchhiker, label_end=True)

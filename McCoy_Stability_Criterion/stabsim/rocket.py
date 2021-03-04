@@ -1,39 +1,66 @@
 import numpy as np
 import scipy 
 from .utility import read_csv
+import math
+from .DigitalDATCOM.datcom_lookup import lookup
 
 class Rocket:
-    def __init__(self, rocket_params, c_n_pa=2):
+    def __init__(self, rocket_params):
         self.static_params = read_csv(rocket_params)
-        self.static_params["Calibers"] = self.static_params["CG"] - self.static_params["CP"]
-        self.c_n_pa = c_n_pa
+        
+        self.cd = 0.3
+        self.cm_alpha = 4
+        self.cl_alpha = 2
+        self.cm_p_alpha = 1
+        self.c_spin = -0.06 # experimentally determined
 
-    def cd(self): # Drag coefficient
-        return 0.3
+    def update_coeffs(self, vel, aoa, altit, mass):
+        self.cd = []
+        self.cm_alpha = []
+        self.cl_alpha = []
+
+        for i in range(len(vel)):
+            x_cm = (self.static_params["Mass"] * self.static_params["CG"] + (mass[i] - self.static_params["Mass"])) / mass[i]
+            lookup_results = lookup([vel[i] / 343], # mach nuumber
+                [aoa],                              # angle of attack
+                [altit[i]],                            # altitude
+                x_cm,                               # vehicle center of mass
+                mass[i])                            # vehical mass
+            coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
+            self.cd.append(0.3 if coeffs['CD'] == 'NDM' or math.isnan(coeffs['CD']) else coeffs['CD'] )
+            self.cm_alpha.append(0.2613 if coeffs['CMA'] == 0 or math.isnan(coeffs['CMA']) else coeffs['CMA'])
+            self.cl_alpha.append(0.03092 if coeffs['CLA'] == 0 or math.isnan(coeffs['CLA']) else coeffs['CLA'])
+
+    def get_cd(self, datcom=True): # Drag coefficient
+        if datcom:
+            return np.array(self.cd)
+        else:
+            return 0.3
         # The profile.drag() function originally had 0.6 as the value (unknown source)
         # Source: https://www.hindawi.com/journals/ijae/2020/6043721/ (Figure 5)
 
-    def cm_alpha(self): # Overturning (a.k.a. pitching/rolling) moment coefficient
-        return 4
+    def get_cm_alpha(self, datcom=True): # Overturning (a.k.a. pitching/rolling) moment coefficient
+        if datcom:
+            return np.array(self.cm_alpha)
+        else:
+            return 4
         # Source: https://www.hindawi.com/journals/ijae/2020/6043721/ (Figure 6e)
 
-    def cl_alpha(self): # Lift force coefficient
-        return 2
+    def get_cl_alpha(self, datcom=True): # Lift force coefficient
+        if datcom:
+            return np.array(self.cl_alpha) 
+        else:
+            return 2
         # Source: https://www.hindawi.com/journals/ijae/2020/6043721/ (Figure 6c)
 
-    def cm_alpha_dot_plus_cm_q(self): # Pitch damping moment coefficient (due to rate of change of angle of attack plus tranverse angular velocity)
+    def get_cm_alpha_dot_plus_cm_q(self): # Pitch damping moment coefficient (due to rate of change of angle of attack plus tranverse angular velocity)
         return -80
         # Source: https://apps.dtic.mil/dtic/tr/fulltext/u2/a417123.pdf (Figure 4)
 
-<<<<<<< HEAD
-    def cm_p_alpha(self):
-        return self.c_n_pa * self.static_params["Calibers"]
-=======
-    def cm_p_alpha(self): # Magnus moment coefficient
+    def get_cm_p_alpha(self): # Magnus moment coefficient
         return 1
         # Source: https://apps.dtic.mil/dtic/tr/fulltext/u2/a417123.pdf (Figure 3)
->>>>>>> c5f8fd9fcfc79d0fed80d0b8ec9d638068050ce0
 
-    def c_spin(self): # Spin damping coefficient
+    def get_c_spin(self): # Spin damping coefficient
         return -0.06
         # Source: James & Matt graphing
