@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import integrate
-from .utility import read_csv
+from .utility import read_csv, atmo_model
 import matplotlib.pyplot as mpl
 from stabsim.rocket import Rocket
 
@@ -50,24 +50,11 @@ class Profile:
         ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
         return -cd * ref_area  * 0.5 * (v ** 2) * self.rho([x])
 
-    def rho(self, x=-1):
-        if x == -1:
-            x = self.altit
+    def rho(self, altit=-1):
+        if altit == -1:
+            altit = self.altit
 
-        rho = []
-        for altit in x:
-            if altit < 11000:
-                temperature = 15.04 - .00649 * altit
-                pressure = 101.29 * ((temperature + 273.1) / 288.08) ** 5.256
-            elif altit >= 11000 and altit < 25000:
-                temperature = -56.46
-                pressure = 22.65 * (2.718281828459045) ** (1.73 - .000157 * altit)
-            else:
-                temperature = -131.21 + .00299 * altit
-                pressure = 2.488 * ((temperature + 273.1) / 216.6) ** -11.388
-            rho.append(pressure / (.2869 * (temperature + 273.1)))
-        
-        return np.array(rho)
+        return np.array([atmo_model(x)[0] for x in altit])
 
     def iz(self):
         return np.array([self.rocket.static_params["I_z"] + self.motor.iz(time) + self.motor.mass(time) * self.motor_pos**2 \
