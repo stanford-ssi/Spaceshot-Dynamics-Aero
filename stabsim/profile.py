@@ -82,6 +82,7 @@ class Profile:
     Stability of moving spinning top
     """
     def gyro_stab_crit(self):
+        print(self.rocket.get_cm_alpha())
         return self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * self.rocket.static_params['Surface Area'] * \
             self.rocket.get_cm_alpha() * self.rocket.static_params['Diameter']) 
 

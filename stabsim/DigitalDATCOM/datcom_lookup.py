@@ -2,7 +2,7 @@ import subprocess
 import numpy as np
 import os
 
-TEMPLATE_NAME = 'datcom_template.txt'
+TEMPLATE_NAME = 'datcom_template_marvin.txt'
 INPUT_NAME = 'current.dcm'
 LOG_NAME = 'datcom_log.txt'
 OUTPUT_NAME = 'datcom.out'
