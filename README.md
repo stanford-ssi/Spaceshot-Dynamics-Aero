@@ -1,5 +1,4 @@
-
-#Stabsim
+# Stabsim
 Calculating stability thresholds for finless spin-stabilized projectiles
 
 ## Getting Started
@@ -52,7 +51,7 @@ End with an example of getting some data out of the system or using it for a lit
 ## Built With
 * [TKInter](https://docs.python.org/3/library/tkinter.html) - Python Interface to TK GUI toolkit
 * [Digital DATCOM](http://www.pdas.com/datcomdownload.html) - by USAF via PDAD
-# [NRMLSISE-00](https://github.com/DeepHorizons/Python-NRLMSISE-00) - atmospheric model
+* [NRMLSISE-00](https://github.com/DeepHorizons/Python-NRLMSISE-00) - atmospheric model
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
