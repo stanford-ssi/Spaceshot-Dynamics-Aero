@@ -11,7 +11,6 @@ class OutputPanel(ttk.Notebook):
         self.kinematics_frame = ttk.Frame(self)
         self.stab_frame = ttk.Frame(self)
 
-
         fig = Figure(figsize = (5, 5), dpi = 100)
         y = [i**2 for i in range(101)]
         plot1 = fig.add_subplot(111)
@@ -28,5 +27,5 @@ class OutputPanel(ttk.Notebook):
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         self.add(self.motor_frame, text='Thrust Curve')
-        self.add(self.kinematics_frame, text='Thrust Curve')
+        self.add(self.kinematics_frame, text='Kinematics')
         self.add(self.stab_frame, text='Stabiity Thresholds')
