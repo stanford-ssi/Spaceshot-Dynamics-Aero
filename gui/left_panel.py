@@ -31,16 +31,19 @@ class LeftPanel(ttk.Frame):
         ttk.Button(self.button_bar, text='Run Configuration', command=self.run).grid(row=0, column=2)
 
     def save(self):
-        self.contorller.rocket_csv = self.file_pane.rocket_csv.cget['text'].split(':')[1]
-        self.controller.rocket_dcm = self.file_pane.rocket_dcm.cget['text'].split(':')[1]
-        self.controller.motor = self.file_pane.motor.cget['text'].split(':')[1]
-        self.controller.thrust = self.file_pane.thrust.cget['text'].split(':')[1]
+        self.controller.rocket_csv = self.file_pane.rocket_csv.cget('text').split(':')[1]
+        self.controller.rocket_dcm = self.file_pane.rocket_dcm.cget('text').split(':')[1]
+        self.controller.motor = self.file_pane.motor.cget('text').split(':')[1]
+        self.controller.thrust = self.file_pane.thrust.cget('text').split(':')[1]
 
-        self.controller.init_spin = self.input_pane.init_spin
-        self.ccontroller.launch_altit = self.input_pane.altitude
-        self.controller.length = self.input_pane.sim_len
-        self.controller.hangle = self.input_pane.hangle
-        self.controller.timesteps = self.input_pane.sim_freq * self.controller.length
+        self.controller.init_spin = int(self.input_pane.init_spin.get())
+        self.controller.launch_altit = int(self.input_pane.altitude.get())
+        self.controller.length = int(self.input_pane.sim_len.get())
+        self.controller.hangle = int(self.input_pane.hangle.get())
+
+        freq = int(self.input_pane.sim_freq.get())
+        length = int(self.input_pane.sim_len.get())
+        self.controller.timesteps = freq * length
 
     def run(self):
         self.parent.run()

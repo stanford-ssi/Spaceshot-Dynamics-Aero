@@ -4,7 +4,7 @@ sys.path.append("..")
 from stabsim.motor import load_motor
 from stabsim.profile import Profile
 from stabsim.rocket import Rocket
-from stabsim.vis import *
+import stabsim.vis as vis
 
 import os
 
@@ -24,15 +24,15 @@ class Controller:
         self.script_dir = os.path.join(os.path.dirname(__file__), '..')
 
     def run(self):
-        rocket = Rocket(os.path.join(self.script_dir, self.rocket_csv))
-        motor = load_motor(os.path.join(self.script_dir, self.motor), os.path.join(self.script_dir, self.thrust))
+        rocket = Rocket(self.rocket_csv)
+        motor = load_motor(self.motor, self.thrust)
         profile = Profile(rocket, motor, self.init_spin, 
             launch_altit=self.launch_altit, 
             length=self.length, 
             hangle=self.hangle,
             timesteps=self.timesteps)
 
-        kinem = kinematics(profile, show=False)
-        spin = spin(profile, show=False)
-        motor = motor(motor, show=False)
+        kinem = vis.kinematics(profile, show=False)
+        spin = vis.spin(profile, show=False)
+        motor = vis.motor(motor, show=False)
         return motor, kinem, spin

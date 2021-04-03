@@ -11,7 +11,7 @@ class OutputPanel(ttk.Notebook):
         self.kinem_frame = ttk.Frame(self)
         self.stab_frame = ttk.Frame(self)
 
-        self.add(self.motor_frame, text='Thrust Curve')
+        self.add(self.motor_frame, text='Motor')
         self.add(self.kinem_frame, text='Kinematics')
         self.add(self.stab_frame, text='Stabiity Thresholds')
 
@@ -19,6 +19,8 @@ class OutputPanel(ttk.Notebook):
         self.draw_frame(motor, self.motor_frame)
         self.draw_frame(kinematics, self.kinem_frame)
         self.draw_frame(stability, self.stab_frame)
+
+        kinematics.show()
 
     def draw_frame(self, fig, frame):
         canvas = FigureCanvasTkAgg(fig, master=frame)  

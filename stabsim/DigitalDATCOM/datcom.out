@@ -31,11 +31,11 @@
 0******************************  INPUT DATA CARDS  ******************************
 
   $FLTCON NMACH=1,                                                                  ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          MACH(1)=1.113,                                                         
+          MACH(1)=-0.031,                                                        
           NALPHA=1,                                                                 ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
           ALSCHD(1)=0,                                                              ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
           NALT=1,                                                                   ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          ALT(1)=143.81,                                                         
+          ALT(1)=775.356,                                                        
           WT=0.4712,LOOP=3.$                                                     
   $OPTINS SREF=0.002,CBARR=0.051,BLREF=0.051$                                    
   $SYNTHS XCG=0.5470601018675721,ZCG=0.0$                                        
@@ -50,11 +50,11 @@
 1          THE FOLLOWING IS A LIST OF ALL INPUT CARDS FOR THIS CASE.
 0
   $FLTCON NMACH=1,                                                               
-          MACH(1)=1.113,                                                         
+          MACH(1)=-0.031,                                                        
           NALPHA=1,                                                              
           ALSCHD(1)=0,                                                           
           NALT=1,                                                                
-          ALT(1)=143.81,                                                         
+          ALT(1)=775.356,                                                        
           WT=0.4712,LOOP=3.$                                                     
   $OPTINS SREF=0.002,CBARR=0.051,BLREF=0.051$                                    
   $SYNTHS XCG=0.5470601018675721,ZCG=0.0$                                        
@@ -81,30 +81,12 @@
   MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
  NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
               M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 1.113     143.81     378.09   9.9609E+04     287.215     2.5478E+07             0.002      0.051     0.051    -0.000     0.000
+0-0.031     775.36     -10.46   9.2352E+04     283.111     **********             0.002      0.051     0.051    -0.000     0.000
 0                                                               -------------------DERIVATIVE (PER DEGREE)-------------------
 0 ALPHA     CD       CL       CM       CN       CA       XCP        CLA          CMA          CYB          CNB          CLB
 0
-    0.0    NDM      NDM       NDM     NDM      NDM     -2.611    5.112E-02   -1.335E-01   -5.112E-02    1.335E-01    0.000E+00
-0*** NDM PRINTED WHEN NO DATCOM METHODS EXIST
+    0.0      NaN    0.000   -0.0000     NaN      NaN      NaN    5.112E-02   -1.335E-01   -5.112E-02    1.335E-01    0.000E+00
 0*** VEHICLE WEIGHT =      0.47 N. 
-0*** LEVEL FLIGHT LIFT COEFFICIENT = 0.01213
-1                             AUTOMATED STABILITY AND CONTROL METHODS PER APRIL 1976 VERSION OF DATCOM
-                                             CONFIGURATION AUXILIARY AND PARTIAL OUTPUT
-                                                   DATCOM BODY ALONE CONFIGURATION
-                                                                RUN
- -----------------------  FLIGHT CONDITIONS  ------------------------           --------------  REFERENCE DIMENSIONS  ------------
-  MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
- NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
-              M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 1.113     143.81     378.09   9.9609E+04     287.215     2.5478E+07             0.002      0.051     0.051    -0.000     0.000
-
-
-                                                       BASIC BODY PROPERTIES
-
-            WETTED AREA      XCG     ZCG     BASE AREA     ZERO LIFT DRAG   BASE DRAG   FRICTION DRAG   PRESSURE DRAG
-             0.1761E+00    -0.00    0.00       0.0030           NDM           NDM           NDM             NDM 
-0*** NDM PRINTED WHEN NO DATCOM METHODS EXIST
-1
+0*** LEVEL FLIGHT LIFT COEFFICIENT =16.86923
  Return to main program from M57O71
 1 END OF JOB.
