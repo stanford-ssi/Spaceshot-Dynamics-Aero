@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def kinematics(profile, rho=True):
+def kinematics(profile, rho=True, show=True):
     end_burn = profile.motor.t[-1]
 
     plt.subplot(311)
@@ -19,9 +19,12 @@ def kinematics(profile, rho=True):
         plt2.set_ylabel('Air Density(kg/m^3)')
         plt2.plot(profile.tt, profile.rho(), color='tab:red')
 
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        return plt
 
-def spin(profile, gyro=True, dynamic=True, label_end=False):
+def spin(profile, gyro=True, dynamic=True, label_end=False, show=True):
     plt.xlabel('Time (s)')
     plt.ylabel('Spin (rad/s)')
 
@@ -42,9 +45,13 @@ def spin(profile, gyro=True, dynamic=True, label_end=False):
         plt.fill_between(profile.tt, 0, plt.ylim()[1], where=spin<dyn_stab, facecolor='red', alpha=0.5)
 
     plt.legend(loc='best')
-    plt.show()
 
-def motor(motor, timesteps=100):
+    if show:
+        plt.show()
+    else:
+        return plt
+
+def motor(motor, timesteps=100, show=True):
     time = motor.t
 
     plt.subplot(311)
@@ -62,7 +69,10 @@ def motor(motor, timesteps=100):
     plt.ylabel('I_z (kg*m/s)')
     plt.plot(time, [motor.iz(t) for t in time])
 
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        return plt
 
 def mass(profile):
     end_burn = profile.motor.t[-1]

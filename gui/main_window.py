@@ -5,7 +5,7 @@ import sys
 from .menu_bar import MenuBar
 from .left_panel import LeftPanel
 from .right_panel import RightPanel
-from .profile_controller import ProfileController
+from .profile_controller import Controller
 
 class MainWindow(tk.Tk):
     def __init__(self):
@@ -18,12 +18,12 @@ class MainWindow(tk.Tk):
         self.style = ttk.Style()
         self.style.theme_use('clam')
 
-        self.controller = ProfileController()
+        self.controller = Controller()
 
         self.menubar = MenuBar(self, self.controller)
         self.config(menu = self.menubar)
 
-        self.left_panel = LeftPanel(self.mainframe)
+        self.left_panel = LeftPanel(self, self.controller)
         self.left_panel.grid(row=0, column=0, sticky='nsew')
 
         self.right_panel = RightPanel(self.mainframe, self.controller)
@@ -31,3 +31,7 @@ class MainWindow(tk.Tk):
 
         self.mainframe.rowconfigure(0, weight=1)
         self.mainframe.columnconfigure(1, weight=1)
+
+    def run(self):
+        motor, kinem, spin = self.controller.run()
+        self.right_panel.output.draw(motor, kinem, spin)
