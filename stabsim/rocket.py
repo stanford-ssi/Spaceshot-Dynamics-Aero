@@ -21,15 +21,17 @@ class Rocket:
 
         for i in range(len(vel)):
             x_cm = (self.static_params["Mass"] * self.static_params["CG"] + (mass[i] - self.static_params["Mass"])) / mass[i]
-            lookup_results = lookup([vel[i] / 343], # mach nuumber
+            lookup_results = lookup([vel[i] / 343], # mach nuumber TODO: is constant ok?
                 [aoa],                              # angle of attack
-                [altit[i]],                            # altitude
+                [altit[i]],                         # altitude
                 x_cm,                               # vehicle center of mass
                 mass[i])                            # vehical mass
             coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
             self.cd.append(0.3 if coeffs['CD'] == 'NDM' or math.isnan(coeffs['CD']) else coeffs['CD'] )
+            #TODO: how were these defaults chosen?
             self.cm_alpha.append(0.2613 if coeffs['CMA'] == 0 or math.isnan(coeffs['CMA']) else coeffs['CMA'])
             self.cl_alpha.append(0.03092 if coeffs['CLA'] == 0 or math.isnan(coeffs['CLA']) else coeffs['CLA'])
+            #TODO: how to get rest of coeffs out datcom
 
     def get_cd(self, datcom=True): # Drag coefficient
         if datcom:

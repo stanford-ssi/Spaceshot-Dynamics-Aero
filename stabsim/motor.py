@@ -13,6 +13,7 @@ class Motor:
         self.hole_radius = hole_radius
         self.length = length
 
+        #TODO: thrust data might not be in equal increments
         self.t = np.linspace(0, burn_time, len(thrust_curve))
         thrust_curve = np.polyfit(self.t, thrust_curve, 4)
         thrust_curve = np.poly1d(thrust_curve)
