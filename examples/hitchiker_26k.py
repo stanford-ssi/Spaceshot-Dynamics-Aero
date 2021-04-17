@@ -15,5 +15,7 @@ hitchhiker_body = Rocket(os.path.join(script_dir, rocket))
 
 N5800 = load_motor(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
 hitchhiker = Profile(hitchhiker_body, N5800, 366, launch_altit=29000, length=5, timesteps=100)
+
+vis.rocket(hitchhiker_body)
 vis.kinematics(hitchhiker)
 vis.spin(hitchhiker, label_end=True)

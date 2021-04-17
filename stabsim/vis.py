@@ -44,6 +44,17 @@ def spin(profile, gyro=True, dynamic=True, label_end=False):
     plt.legend(loc='best')
     plt.show()
 
+def rocket(rocket):
+    plt.xlabel('Times (s)')
+    plt.ylabel('Coeffs (non-dimensionalized)')
+
+    plt.plot(rocket.cd, label=r'C_d')
+    plt.plot(rocket.cm_alpha, label=r'C_{m_\alpha}')
+    plt.plot(rocket.cl_alpha, label=r'C_{l_\alpha}')
+
+    plt.legend()
+    plt.show()
+
 def motor(motor, timesteps=100):
     time = motor.t
 

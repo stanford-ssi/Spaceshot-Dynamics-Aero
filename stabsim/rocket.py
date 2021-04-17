@@ -21,7 +21,7 @@ class Rocket:
 
         for i in range(len(vel)):
             x_cm = (self.static_params["Mass"] * self.static_params["CG"] + (mass[i] - self.static_params["Mass"])) / mass[i]
-            lookup_results = lookup([vel[i] / 343], # mach nuumber
+            lookup_results = lookup([vel[i] / 343], # mach nuumber TODO: is constant ok
                 [aoa],                              # angle of attack
                 [altit[i]],                            # altitude
                 x_cm,                               # vehicle center of mass
