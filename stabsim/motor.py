@@ -22,24 +22,24 @@ class Motor:
             return 0
         self.thrust = thrust
 
-    def wet_mass_variable(self, time):
+    def propellant_mass_variable(self, time):
         return self.mass(time) - self.dry_mass
 
-    def inner_radius(self, time):
-        propellant_density = self.wet_mass / np.pi / self.length /(self.radius**2 - self.hole_radius**2)
-        return np.sqrt((self.radius**2) - (self.wet_mass_variable(time) / (propellant_density * np.pi * self.length))) #derived from density equation
+    def inner_radius_variable(self, time)
+        propellant_density = self.propellant_mass_variable / np.pi / self.length /(self.radius**2 - self.hole_radius**2)
+        return np.sqrt((self.radius**2) - (self.propellant_mass_variable(time) / (propellant_density * np.pi * self.length)))
 
     # Moment of inertia along the axis of symmetry of rocket
     def iz(self, time):
-        iz_dry_mass = 0.5 * self.dry_mass * self.radius**2 # 2 thin disks (iz = 1/2*(dry mass/2)r^2) on either end
-        iz_wet_mass = max(0.5 * self.wet_mass_variable(time) * ((self.radius**2) + (self.inner_radius(time)**2)), 0) #cylinder with hole in center
-        return iz_dry_mass + iz_wet_mass
+        iz_dry_mass = self.dry_mass * self.radius**2 #thin cylindrical shell 
+        iz_propellant_mass = max(0.5 * self.propellant_mass_variable(time) * ((self.radius**2) + (self.inner_radius(time)**2)), 0) #cylinder with hole in center
+        return iz_dry_mass + iz_propellant_mass
 
     # Moment of inertia not along axis of symmetry of rocket
     def ix(self, time):
-        ix_dry = 2 * (0.125 * self.dry_mass * self.radius**2 + 0.5 * self.dry_mass * (self.length/2)**2)  # 2 thin disks (ix = 1/4(dry mass/2)r^2) on either end, with parallel axis theorem ((dry mass/2)d^2)
-        ix_wet = max((1/12) * self.wet_mass_variable(time) * (3 * (self.radius**2 + self.inner_radius(time)**2) + self.length**2), 0) #cylinder with hole in center
-        return ix_dry + ix_wet
+        ix_dry_mass = (0.5 * self.dry_mass * self.radius**2) + (1/12) * self.dry_mass * self.length**2
+        ix_propellant_mass = max((1/12) * self.propellant_mass_variable(time) * (3 * (self.radius**2 + self.inner_radius(time)**2) + self.length**2), 0) #cylinder with hole in center
+        return ix_dry_mass + ix_propellant_mass
 
     def mass(self, time):        
         # values extrapolated through simple linear approximation
