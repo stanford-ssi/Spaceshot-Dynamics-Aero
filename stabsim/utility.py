@@ -53,3 +53,8 @@ def atmo_model(altitude):
     # Get temperature
     temp = output.t[1]
     return rho, temp
+
+def fill_list(lst):
+    for i in range(len(lst)):
+        if i > 0 and lst[i] == -1:
+            lst[i] = lst[i-1]

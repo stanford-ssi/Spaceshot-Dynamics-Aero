@@ -1,9 +1,9 @@
  $FLTCON NMACH=1,
-         MACH(1)=3.18,
+         MACH(1)=3.141,
          NALPHA=1,
-         ALSCHD(1)=0,
+         ALSCHD(1)=4,
          NALT=1,
-         ALT(1)=33174.674,
+         ALT(1)=33069.105,
          WT=6.920999999999999,LOOP=3.$
  $OPTINS SREF=0.002,CBARR=0.051,BLREF=0.051$
  $SYNTHS XCG=1.0834561479554978,ZCG=0.0$
