@@ -27,7 +27,7 @@ def spin(profile, gyro=True, dynamic=True, label_end=False):
 
     end_burn = profile.motor.t[-1]
     spin = profile.spin()
-    #spin = spin.reshape(spin.shape[0],)
+    spin = spin.reshape(spin.shape[0],)
     plt.plot(spin, 'k', label='Expected Spin')
     if label_end:
         plt.axvline(end_burn, color='grey', label='End of Motor Burn')
@@ -51,9 +51,11 @@ def rocket(rocket):
     plt.plot(rocket.get_cd(), label=r'$C_D$')
     plt.plot(rocket.get_cm_alpha(), label=r'$C_{M_\alpha}$')
     plt.plot(rocket.get_cl_alpha(), label=r'$C_{L_\alpha}$')
-    plt.plot(rocket.get_cm_dot(), label=r'$C_{M_{\dot{\alpha}}}+C_{M_{\dot{q}}}$')
+    plt.plot(np.abs(rocket.get_cm_dot()), label=r'$|C_{M_{\dot{\alpha}}}+C_{M_{\dot{q}}}|$')
 
+    plt.yscale('log')
     plt.legend()
+
     plt.show()
 
 def motor(motor, timesteps=100):

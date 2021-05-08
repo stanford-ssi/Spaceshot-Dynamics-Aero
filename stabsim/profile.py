@@ -97,15 +97,12 @@ class Profile:
         cm_p_alpha = self.rocket.get_cm_p_alpha() # Magnus moment coeff
         ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
 
-        print('md^2', self.mass * self.rocket.static_params['Diameter'] ** 2)
-        print('md^2/I', self.mass * self.rocket.static_params['Diameter'] ** 2 / self.ix())
         dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * ref_area * self.rocket.static_params['Diameter'] * cm_alpha * self.ix()) * \
             (cl_alpha - cd - ((self.mass * self.rocket.static_params['Diameter'] ** 2 / self.ix()) * (cm_alpha_dot_plus_cm_q))) / \
                 (2 * (self.iz() * cl_alpha + self.mass * self.rocket.static_params['Diameter'] ** 2 * cm_p_alpha))
         return np.abs(dyn_spin_crit)
 
     def spin(self):
-        return self.init_spin
         omega0 = self.init_spin
         C_spin = self.rocket.get_c_spin()
 

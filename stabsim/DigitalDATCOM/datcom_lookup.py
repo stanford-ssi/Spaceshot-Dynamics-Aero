@@ -2,13 +2,15 @@ import subprocess
 import numpy as np
 import os
 
-TEMPLATE_NAME = 'datcom_template_marvin.txt'
+TEMPLATE_NAME = 'datcom_template_hitchiker.txt'
 INPUT_NAME = 'current.dcm'
 LOG_NAME = 'datcom_log.txt'
 OUTPUT_NAME = 'datcom.out'
 EXEC_NAME = 'datcom'
 COLUMNS = ['ALPHA', 'CD', 'CL', 'CM', 'CN', 'CA', 'XCP',
            'CLA', 'CMA', 'CYB', 'CNB', 'CLB']
+DERIV_COLUMNS = ['ALPHA', 'CLQ', 'CMQ', 'CLAD', 'CMAD',
+            'CLP', 'CYP', 'CNP', 'CNR', 'CLR']
 DATCOM_NUM_DECIMALS = 3
 
 
@@ -48,7 +50,7 @@ def lookup(machs, alphas, alts, cg, mass):
     with open(os.path.join(datcom_path, INPUT_NAME), 'w') as f:
         f.write(datcom_input)
 
-    command = 'cd {}; echo {} | ./{}; cd ..'.format(
+    command = 'cd {}; echo {} | ./"{}"; cd ..'.format(
         datcom_path, INPUT_NAME, EXEC_NAME)
     with open(os.path.join(datcom_path, LOG_NAME), 'w') as f:
         subprocess.call(command, shell=True, stdout=f)
@@ -59,13 +61,13 @@ def lookup(machs, alphas, alts, cg, mass):
     coeffs = {}
 
     while True:
-        card_start = datcom_output.find('CHARACTERISTICS AT ANGLE OF ATTACK AND IN SIDESLIP')
-        if card_start == -1:
+        coeffs_start = datcom_output.find('CHARACTERISTICS AT ANGLE OF ATTACK AND IN SIDESLIP')
+        if coeffs_start == -1:
             break
-        conds_start = card_start + datcom_output[card_start:].find('\n0') + 3
+        conds_start = coeffs_start + datcom_output[coeffs_start:].find('\n0') + 3
         conds_end = conds_start + datcom_output[(conds_start + 1):].find('\n0')
         diffs_start = conds_end + datcom_output[(conds_end + 1):].find('\n0\n') + 4
-        diffs_end = diffs_start + datcom_output[diffs_start:].find('\n0***')
+        diffs_end = diffs_start + min(datcom_output[diffs_start:].find('\n0***'), datcom_output[diffs_start:].find('\n1 '))
 
         conds_text = datcom_output[conds_start:conds_end]
         diffs_text = datcom_output[diffs_start:diffs_end]
@@ -82,8 +84,31 @@ def lookup(machs, alphas, alts, cg, mass):
                 coeffs[(mach, alpha, alt)] = values
         datcom_output = datcom_output[diffs_end:]
 
+        damps_start = datcom_output.find('DYNAMIC DERIVATIVES')
+        if damps_start == -1:
+            break
+        conds_start = damps_start + datcom_output[damps_start:].find('\n0') + 3
+        conds_end = conds_start + datcom_output[(conds_start + 1):].find('DYNAMIC')
+        diffs_start = conds_end + datcom_output[(conds_end + 1):].find('\n0\n') + 4
+        diffs_end = diffs_start + datcom_output[diffs_start:].find('\n0***')
+
+        conds_text = datcom_output[conds_start:conds_end]
+        damps_text = datcom_output[diffs_start:diffs_end]
+
+        # In some cases, DATCOM also generates output cards which
+        # include basic flight data. We don't need that.
+        if 'BASIC' not in conds_text:
+            conds = [parse_float(cond) for cond in conds_text.split()]
+            mach, alt = conds[:2]
+            for damp_text in damps_text.split('\n'):
+                entries = [parse_float(damp) for damp in damps_text.split()]
+                values = dict(zip(DERIV_COLUMNS[1:], entries[1:]))
+                alpha = entries[0]
+                coeffs[(mach, alpha, alt)].update(values)
+        datcom_output = datcom_output[diffs_end:]
+
     return coeffs
 
 
 # print(lookup([0.1, 0.2], [0.1, 0.2], [100, 200], 1, 1))
-# print(lookup([0.1, 0.8, 0.9], [0.0], [0.0], 1, 1))
+# print(lookup([0.1], [0.0], [0.0], 1, 1))

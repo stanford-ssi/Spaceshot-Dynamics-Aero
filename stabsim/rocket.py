@@ -49,8 +49,8 @@ class Rocket:
             self.cd.append(self.last_val[0] if coeffs['CD'] == 'NDM' or math.isnan(coeffs['CD']) else coeffs['CD'] )
             self.cm.append(self.last_val[1] if coeffs['CM'] == 'NDM' or math.isnan(coeffs['CM']) else coeffs['CM'])
             self.cl.append(self.last_val[2] if coeffs['CL'] == 'NDM' or math.isnan(coeffs['CL']) else coeffs['CL'])
-            self.cma_dot.append(self.last_val[3] if math.isnan(coeffs['CMA']) else coeffs['CMA'])
-            self.cmq_dot.append(self.last_val[4] if math.isnan(coeffs['CNB']) else coeffs['CNB'])
+            self.cma_dot.append(self.last_val[3] if math.isnan(coeffs['CMAD']) else coeffs['CMAD'])
+            self.cmq_dot.append(self.last_val[4] if math.isnan(coeffs['CMQ']) else coeffs['CMQ'])
         
         self.fill_coeffs()
 
