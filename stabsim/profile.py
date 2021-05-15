@@ -49,6 +49,7 @@ class Profile:
         self.vel = z[:, 1]
 
         self.rocket.update_coeffs(self.vel, self.aoa, self.altit, self.mass, single=False)
+        self.rho = self.rho()
 
     def drag(self, x, v):
         cd = self.rocket.get_cd()
@@ -59,6 +60,12 @@ class Profile:
         cl = self.rocket.get_cl_alpha()
         ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
         return 0.5 * self.rho([x]) * (v ** 2) * ref_area * cl * np.sin(np.radians(self.aoa))
+
+    def temp(self, altit=-1):
+        if altit == -1:
+            altit = self.altit
+
+        return np.array([atmo_model(x)[1] for x in altit])
 
     def rho(self, altit=-1):
         if altit == -1:
@@ -81,8 +88,8 @@ class Profile:
     """
     def gyro_stab_crit(self):
         ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
-        gyro_spin_crit = self.vel / self.ix() * np.sqrt(2 * self.rho() * self.iz() * ref_area * \
-            self.rocket.get_cm_alpha() * self.rocket.static_params['Diameter']) 
+        gyro_spin_crit = self.vel / self.ix() * np.sqrt(2 * self.rho * self.iz() * ref_area * \
+            np.abs(self.rocket.get_cm_alpha()) * self.rocket.static_params['Diameter']) 
         return np.abs(gyro_spin_crit)
 
     """
@@ -90,14 +97,14 @@ class Profile:
     Incorporates aerodynamic effects
     """
     def dynamic_stab_crit(self):
-        cm_alpha = self.rocket.get_cm_alpha() # Overturning (a.k.a. pitching/rolling) moment coeff
+        cm_alpha = np.abs(self.rocket.get_cm_alpha()) # Overturning (a.k.a. pitching/rolling) moment coeff
         cl_alpha = self.rocket.get_cl_alpha() # Lift force coeff
         cd = self.rocket.get_cd() # Drag coeff
         cm_alpha_dot_plus_cm_q = self.rocket.get_cm_dot() # Pitch damping moment coefficient (due to rate of change of angle of attack plus tranverse angular velocity)
         cm_p_alpha = self.rocket.get_cm_p_alpha() # Magnus moment coeff
         ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
 
-        dyn_spin_crit = self.vel * np.sqrt(2 * self.rho() * ref_area * self.rocket.static_params['Diameter'] * cm_alpha * self.ix()) * \
+        dyn_spin_crit = self.vel * np.sqrt(2 * self.rho * ref_area * self.rocket.static_params['Diameter'] * cm_alpha * self.ix()) * \
             (cl_alpha - cd - ((self.mass * self.rocket.static_params['Diameter'] ** 2 / self.ix()) * (cm_alpha_dot_plus_cm_q))) / \
                 (2 * (self.iz() * cl_alpha + self.mass * self.rocket.static_params['Diameter'] ** 2 * cm_p_alpha))
         return np.abs(dyn_spin_crit)
@@ -109,7 +116,7 @@ class Profile:
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()
             ref_area = np.pi / 4 * (profile.rocket.static_params['Diameter'] ** 2)
-            domegadt = 0.5 * C * profile.rho()[ind] * profile.vel[ind] * ref_area * omega * profile.rocket.static_params['Diameter']
+            domegadt = 0.5 * C * profile.rho[ind] * profile.vel[ind] * ref_area * omega * profile.rocket.static_params['Diameter']
             return domegadt
         return integrate.odeint(spin_damping, omega0, self.tt, args=(C_spin, self))
 

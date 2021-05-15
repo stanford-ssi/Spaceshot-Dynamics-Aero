@@ -17,20 +17,24 @@ def kinematics(profile, rho=True):
     if rho:
         plt2 = plt.twinx()
         plt2.set_ylabel('Air Density(kg/m^3)')
-        plt2.plot(profile.tt, profile.rho(), color='tab:red')
+        plt2.plot(profile.tt, profile.rho, color='tab:red')
 
     plt.show()
 
-def spin(profile, gyro=True, dynamic=True, label_end=False):
+def spin(profile, gyro=True, dynamic=True, label_end=False, label_mach=False):
     plt.xlabel('Time (s)')
     plt.ylabel('Spin (rad/s)')
 
-    end_burn = profile.motor.t[-1]
     spin = profile.spin()
     spin = spin.reshape(spin.shape[0],)
-    plt.plot(spin, 'k', label='Expected Spin')
+    plt.plot(profile.tt, spin, 'k', label='Expected Spin')
+
     if label_end:
-        plt.axvline(end_burn, color='grey', label='End of Motor Burn')
+        end_burn = profile.motor.t[-1]
+        plt.axvline(end_burn, color='rosybrown', label='End of Motor Burn')
+    if label_mach:
+        mach = profile.tt[np.abs(profile.vel - 343).argmin()]
+        plt.axvline(mach, color='burlywood', label='Mach')
 
     if gyro:
         gyro_stab = profile.gyro_stab_crit()
@@ -44,18 +48,28 @@ def spin(profile, gyro=True, dynamic=True, label_end=False):
     plt.legend(loc='best')
     plt.show()
 
-def rocket(rocket):
+def rocket(profile, label_mach=False):
     plt.xlabel('Times (s)')
     plt.ylabel('Coeffs (non-dimensionalized)')
 
-    plt.plot(rocket.get_cd(), label=r'$C_D$')
-    plt.plot(rocket.get_cm_alpha(), label=r'$C_{M_\alpha}$')
-    plt.plot(rocket.get_cl_alpha(), label=r'$C_{L_\alpha}$')
-    plt.plot(np.abs(rocket.get_cm_dot()), label=r'$|C_{M_{\dot{\alpha}}}+C_{M_{\dot{q}}}|$')
+    plt.plot(profile.tt, profile.rocket.get_cd(), label=r'$C_D$')
+    plt.plot(profile.tt, profile.rocket.get_cm_alpha(), label=r'$C_{M_\alpha}$')
+    plt.plot(profile.tt, profile.rocket.get_cl_alpha(), label=r'$C_{L_\alpha}$')
 
-    plt.yscale('log')
+    if label_mach:
+        temp = profile.temp()
+        mach = 343 * np.sqrt(temp / 300)
+        mach_trans = profile.tt[np.abs(profile.vel - mach).argmin()]
+
+        plt.axvline(mach_trans, color='burlywood', label='Mach')
+        plt.fill_between(profile.tt, 0, plt.ylim()[1], where=np.logical_and(profile.vel>0.6*mach, profile.vel<1.4*mach), facecolor='k', alpha=0.3)
+
     plt.legend()
 
+    plt2 = plt.twinx()
+    plt2.plot(profile.tt, profile.rocket.get_cm_dot(), 'tab:red', label=r'$|C_{M_{\dot{\alpha}}}+C_{M_{\dot{q}}}|$')
+
+    plt.legend()
     plt.show()
 
 def motor(motor, timesteps=100):
@@ -87,4 +101,3 @@ def mass(profile):
     plt.axvline(end_burn, color='grey')
 
     plt.show()
-
