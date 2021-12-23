@@ -3,6 +3,8 @@ from .NRLMSISE00.nrlmsise_00_header import *
 from .NRLMSISE00.nrlmsise_00 import *
 
 def read_csv(filename):
+    if filename == None:
+        return {}
     dic = {}
     with open(filename, mode='r') as csv_file:
         reader = csv.DictReader(csv_file)
