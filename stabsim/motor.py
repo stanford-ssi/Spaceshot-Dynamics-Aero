@@ -6,15 +6,20 @@ import numpy as np
 Simple model for a solid rocket motor for mechanical simulations
 """
 class Motor:
-    def __init__(self, wet_mass, dry_mass, radius, length, thrust_curve, hole_radius=0., burn_time=4.):
+    def __init__(self, wet_mass, dry_mass, radius, length, thrust_curve, time=-1, hole_radius=0., burn_time=4.):
         self.wet_mass = wet_mass
         self.dry_mass = dry_mass
         self.radius = radius
         self.hole_radius = hole_radius
         self.length = length
 
-        #TODO: thrust data might not be in equal increments
-        self.t = np.linspace(0, burn_time, len(thrust_curve))
+        if len(thrust_curve) == 0:
+            return
+        elif time == -1:
+            self.t = np.linspace(0, burn_time, len(thrust_curve))
+        else:
+            self.t = np.linspace(time)
+            burn_time = time[-1]
         thrust_curve = np.polyfit(self.t, thrust_curve, 4)
         thrust_curve = np.poly1d(thrust_curve)
         def thrust(t):
@@ -47,6 +52,22 @@ class Motor:
         linear_approx = (self.wet_mass - self.dry_mass) * ((self.t[-1] - time) / self.t[-1]) + self.dry_mass
         return max(linear_approx, self.dry_mass) 
 
+def load_motor(rasp):
+    spec = []
+    time = []
+    force = []
+    with open(rasp, 'r') as thrust_curve:
+        thrust_curve = list(thrust_curve) # allows you to iterate twice
+        spec = thrust_curve[1].split()
+        time = [float(line.split()[0]) for i, line in enumerate(thrust_curve) if i > 1]
+        force = [float(line.split()[1]) for i, line in enumerate(thrust_curve) if i > 1]
+
+    return Motor(float(spec[4]), # wet mass
+        float(spec[4]) - float(spec[3]), # dry mass
+        float(spec[1]) / 2000, # radius
+        float(spec[2]) / 1000, # length
+        force, time) # thrust info
+
 def load_motor(spec, thrust_curve):
     # get motor values from csv or spreadsheet
     motor = read_csv(spec)
@@ -61,3 +82,4 @@ def load_motor(spec, thrust_curve):
 
     return Motor(motor["wet_mass"], motor["dry_mass"], motor["radius"], motor["length"], \
         force, hole_radius=motor["width"], burn_time=time[-1])  
+

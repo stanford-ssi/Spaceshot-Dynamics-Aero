@@ -30,6 +30,7 @@ class Profile:
 
         def model(z0, t):
             #Function that returs a list of (dxdt, dvdt) over t
+            #TODO: include lift
             # Equations based on https://www.overleaf.com/project/5fe249e8a42b0068add612ab
             x, v = z0
             ind = np.abs(self.tt - t).argmin()
@@ -74,8 +75,7 @@ class Profile:
         return np.array([atmo_model(x)[0] for x in altit])
 
     def iz(self):
-        return np.array([self.rocket.static_params["I_z"] + self.motor.iz(time) + self.motor.mass(time) * self.motor_pos**2 \
-            for time in self.tt])
+        return np.array([self.rocket.static_params["I_z"] + self.motor.iz(time) for time in self.tt])
 
     def ix(self):
         #TODO: intermediate axis from com?
