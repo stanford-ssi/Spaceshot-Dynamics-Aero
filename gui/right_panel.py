@@ -8,7 +8,7 @@ class RightPanel(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
 
-        ttk.Label(self, text='Output').grid(row=0, column=0, stick='ns')
+        ttk.Label(self, text="Output").grid(row=0, column=0, stick='ns')
         self.rowconfigure(0, weight=0)
 
         self.output = OutputPanel(self, controller)
@@ -17,8 +17,10 @@ class RightPanel(ttk.Frame):
 
         self.output_bar = ttk.Frame(self)
         self.output_bar.grid(row=2, column=0, stick='nsew')
-        ttk.Label(self.output_bar, text='Apogee (km): ').grid(row=0, column=1)
-        ttk.Label(self.output_bar, text='Min Speed (rad/s): ').grid(row=0, column=2)
+        ttk.Label(self.output_bar, text="Apogee (km): ").grid(row=0, column=0, padx=5)
+        self.apogee = ttk.Label(self.output_bar, text="NA").grid(row=0, column=1, padx=15)
+        ttk.Label(self.output_bar, text="Min Speed (rad/s): ").grid(row=0, column=2, padx=5)
+        self.speed = ttk.Label(self.output_bar, text="NA").grid(row=0, column=3, padx=15)
         self.rowconfigure(2, weight=0)
 
         self.console = ScrollableFrame(self)
@@ -26,3 +28,10 @@ class RightPanel(ttk.Frame):
         self.rowconfigure(3, weight=1)
 
         self.columnconfigure(0, weight=1)
+
+    def log(self, text):
+        self.console.log(text)
+
+    def update_output(self, apogee, speed):
+        self.apogee.config(str(apogee))
+        self.speed.config(str(speed))

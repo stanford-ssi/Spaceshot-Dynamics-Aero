@@ -8,15 +8,18 @@ class OutputPanel(ttk.Notebook):
         super().__init__(parent)
 
         self.motor_frame = ttk.Frame(self)
+        self.rocket_frame = ttk.Frame(self)
         self.kinem_frame = ttk.Frame(self)
         self.stab_frame = ttk.Frame(self)
 
-        self.add(self.motor_frame, text='Motor')
-        self.add(self.kinem_frame, text='Kinematics')
-        self.add(self.stab_frame, text='Stabiity Thresholds')
+        self.add(self.motor_frame, text="Motor")
+        self.add(self.rocket_frame, text="Aerodynamic Coefficients")
+        self.add(self.kinem_frame, text="Kinematics")
+        self.add(self.stab_frame, text="Stabiity Thresholds")
 
-    def draw(self, motor, kinematics, stability):
+    def draw(self, motor, rocket, kinematics, stability):
         self.draw_frame(motor, self.motor_frame)
+        self.draw_frame(rocket, self.rocket_frame)
         self.draw_frame(kinematics, self.kinem_frame)
         self.draw_frame(stability, self.stab_frame)
 

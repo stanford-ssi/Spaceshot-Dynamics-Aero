@@ -12,14 +12,14 @@ class MainWindow(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
 
-        self.title('Stabsim - Spaceshot')
+        self.title("Stabsim - Spaceshot")
         self.mainframe = ttk.Frame(self)
         self.mainframe.pack(fill=tk.BOTH, expand=1) 
         self.attributes('-fullscreen', True)
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
         self.tk.call('source', os.path.join(dir_path, 'sun-valley.tcl'))
-        self.tk.call('set_theme', 'dark')
+        self.tk.call('set_theme', 'light')
 
         self.controller = Controller()
 
@@ -36,6 +36,12 @@ class MainWindow(tk.Tk):
         self.mainframe.columnconfigure(1, weight=3)
         self.mainframe.rowconfigure(0, weight=1)
 
+        self.log("Welcome to Stabsim")
+
     def run(self):
-        motor, kinem, spin = self.controller.run()
-        self.right_panel.output.draw(motor, kinem, spin)
+        motor, rocket, kinem, spin = self.controller.vis()
+        self.right_panel.output.draw(motor, rocket, kinem, spin)
+        self.right_panel.update(self.controller.profile.apogee(), self.controller.profile.min_spin())
+
+    def log(self, text):
+        self.right_panel.log(text)

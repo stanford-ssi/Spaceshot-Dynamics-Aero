@@ -1,6 +1,7 @@
 import csv
 from .NRLMSISE00.nrlmsise_00_header import *
 from .NRLMSISE00.nrlmsise_00 import *
+import os
 
 def read_csv(filename):
     if filename == None:
@@ -60,3 +61,22 @@ def fill_list(lst):
     for i in range(len(lst)):
         if i > 0 and lst[i] == -1:
             lst[i] = lst[i-1]
+
+def join(lst):
+    path = ''
+    for str in lst:
+        path = os.path.join(path, str)
+    return path
+
+def insert_newlines(string, every=50):
+    ind = 0
+    lst_ind = 0
+    lst_nl = 0
+    while ind != -1:
+        ind = string.find(',', lst_ind)
+        if ind - lst_nl > every:
+            string = string[:lst_ind] + '\n' + ' '*8 + string[lst_ind:] # datcom doesn't like tabs
+            lst_nl = ind
+        lst_ind = ind + 1 # want new lines after commas
+    return string
+        

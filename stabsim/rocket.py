@@ -1,15 +1,60 @@
 import numpy as np
-import scipy 
-from .utility import read_csv, fill_list
+import os 
+from .utility import insert_newlines, read_csv, fill_list, join
 import math
 from .DigitalDATCOM.datcom_lookup import lookup
 
 class Rocket:
-    def __init__(self, rocket_params):
+    def __init__(self, rocket_params, dcm=''):
         self.static_params = read_csv(rocket_params)
+        self.dcm = self.create_dcm() if dcm == '' else dcm
         self.clear_coeffs
         self.memoize = {}
         self.last_val = (0,0,0,0,0)
+
+    def create_dcm(self):
+        # generate ogive equation based off given parameters
+        nos_lnt = float(self.static_params['Nosecone Length'])
+        rad = float(self.static_params['Diameter']) / 2
+        air_lnt = float(self.static_params['Airframe Length'])
+        rho = (rad**2 + nos_lnt**2) / 2 / rad
+        def ogive(x):
+            ans = np.sqrt(rho**2 - (nos_lnt - x)**2) + rad - rho
+            return abs(round(ans, 10))
+        nosecone = np.arange(0, nos_lnt, 0.02)
+        airframe = np.linspace(nos_lnt, nos_lnt + air_lnt, num=3) 
+        xs = np.concatenate((nosecone, airframe)).tolist()
+        rs = [ogive(x) for x in nosecone] + [rad for x in airframe]
+        nx = len(xs)
+
+        # replace template based off of calculated formulas
+        path = os.path.dirname(os.path.abspath(__file__))
+        with open(join((path, 'DIGITALDATCOM', 'datcom_template.txt')), 'r') as f:
+            template = f.read()
+        replacements = {
+            'INSERT_NOSELEN' : str(nos_lnt),
+            'INSERT_BODYLEN' : str(air_lnt),
+            'INSERT_LEN' : str(nx),
+            'INSERT_X' : insert_newlines(','.join([str(x) for x in xs])),
+            'INSERT_R' : insert_newlines(','.join([str(r) for r in rs]))
+        }
+        for key, value in replacements.items():
+            template = template.replace(key, value)
+        
+        # generate new template file
+        new_template = 'rocket_'
+        ind = 0
+        while os.path.exists(join((path, 'DigitalDATCOM', new_template+str(ind)))):
+            ind = ind + 1
+        new_template = new_template + str(ind)
+        with open(join((path, 'DigitalDATCOM', new_template)), 'w') as f:
+            f.write(template)
+        return new_template
+
+    def update_dcm(self):
+        path = os.path.dirname(os.path.abspath(__file__))
+        if not os.path.exists(join(path, 'DigitalDATCOM', self.dcm)):
+            self.dcm = self.create_dcm()
 
     def clear_coeffs(self):
         self.cd = []
@@ -39,12 +84,13 @@ class Rocket:
             return
 
         for i in range(len(vel)):
-            x_cm = (self.static_params["Mass"] * self.static_params["CG"] + (mass[i] - self.static_params["Mass"])) / mass[i]
+            x_cm = (self.static_params['Mass'] * self.static_params['CG'] + (mass[i] - self.static_params['Mass'])) / mass[i]
             lookup_results = lookup([vel[i] / 343], # mach nuumber TODO: is constant ok?
                 [aoa],                              # angle of attack
                 [altit[i]],                         # altitude
                 x_cm,                               # vehicle center of mass
-                mass[i])                            # vehical mass
+                mass[i],                            # vehical mass
+                template=self.dcm)                            
             coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
             self.cd.append(self.last_val[0] if coeffs['CD'] == 'NDM' or math.isnan(coeffs['CD']) else coeffs['CD'] )
             self.cm.append(self.last_val[1] if coeffs['CM'] == 'NDM' or math.isnan(coeffs['CM']) else coeffs['CM'])

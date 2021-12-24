@@ -20,7 +20,7 @@ def parse_float(text):
     else:
         return float(text)
 
-def lookup(machs, alphas, alts, cg, mass):
+def lookup(machs, alphas, alts, cg, mass, template=TEMPLATE_NAME):
     # NOTE: There is a VERY insidious bug that occurs with
     # DATCOM: if you feed in too many decimal digits (~20)
     # it will throw a floating point exception of some kind
@@ -30,7 +30,7 @@ def lookup(machs, alphas, alts, cg, mass):
     alts = [round(alt, DATCOM_NUM_DECIMALS) for alt in alts]
 
     datcom_path = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(datcom_path, TEMPLATE_NAME), 'r') as f:
+    with open(os.path.join(datcom_path, template), 'r') as f:
         datcom_input = f.read()
 
     replacements = {

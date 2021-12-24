@@ -6,21 +6,73 @@ import numpy as np
 Simple model for a solid rocket motor for mechanical simulations
 """
 class Motor:
-    def __init__(self, wet_mass, dry_mass, radius, length, thrust_curve, time=-1, hole_radius=0., burn_time=4.):
+    def __init__(self, wet_mass, dry_mass, radius, length, thrust_curve, time=-1, hole_radius=0.):
         self.wet_mass = wet_mass
         self.dry_mass = dry_mass
         self.radius = radius
         self.hole_radius = hole_radius
         self.length = length
 
-        if len(thrust_curve) == 0:
-            return
-        elif time == -1:
-            self.t = np.linspace(0, burn_time, len(thrust_curve))
+        self.t = np.array([])
+        self.thrust = None
+        if time != -1:
+            self.update_thrust(time, thrust_curve)
+
+    @classmethod
+    def fromfile(cls, rasp):
+        spec = []
+        with open(rasp, 'r') as thrust_curve:
+            thrust_curve = list(thrust_curve)
+            spec = thrust_curve[1].split()
+        time, force = Motor.get_thrust(rasp)
+
+        return cls(float(spec[5]), # wet mass
+            float(spec[5]) - float(spec[4]), # dry mass
+            float(spec[1]) / 2000, # radius
+            float(spec[2]) / 1000, # length
+            force, time=time)
+
+    @classmethod
+    def fromfiles(cls, spec, rasp):
+        motor = Motor.fromfile(rasp)
+        motor.set_spec(spec)
+        return motor
+
+    def set_spec(self, file):
+        motor = read_csv(file)
+        self.wet_mass = motor['wet_mass'] 
+        self.dry_mass = motor['dry_mass'] 
+        self.radius = motor['radius'] 
+        self.length = motor['length'] 
+        self.hole_radius = motor['width']
+
+    @classmethod
+    def get_thrust(cls, file):
+        with open(file, 'r') as thrust_curve:
+            thrust_curve = list(thrust_curve) # allows you to iterate twice
+            time = [float(line.split()[0]) for i, line in enumerate(thrust_curve) if i > 1]
+            force = [float(line.split()[1]) for i, line in enumerate(thrust_curve) if i > 1]
+        return time, force
+
+    def update_thrust(self, *args):
+        if len(args) == 1:
+            time, force = Motor.get_thrust(args[0])
+        elif len(args) == 2:
+            time = args[0]
+            force = args[1]
         else:
-            self.t = np.linspace(time)
-            burn_time = time[-1]
-        thrust_curve = np.polyfit(self.t, thrust_curve, 4)
+            return
+
+        if len(force) == 0:
+            return
+        
+        try:
+            iter(time)
+            self.t = np.array(time)
+        except:
+            self.t = np.linspace(0, time, len(force))
+        burn_time = time[-1]
+        thrust_curve = np.polyfit(self.t, force, 4)
         thrust_curve = np.poly1d(thrust_curve)
         def thrust(t):
             if t <= burn_time:
@@ -51,35 +103,3 @@ class Motor:
         # values extrapolated through simple linear approximation
         linear_approx = (self.wet_mass - self.dry_mass) * ((self.t[-1] - time) / self.t[-1]) + self.dry_mass
         return max(linear_approx, self.dry_mass) 
-
-def load_motor(rasp):
-    spec = []
-    time = []
-    force = []
-    with open(rasp, 'r') as thrust_curve:
-        thrust_curve = list(thrust_curve) # allows you to iterate twice
-        spec = thrust_curve[1].split()
-        time = [float(line.split()[0]) for i, line in enumerate(thrust_curve) if i > 1]
-        force = [float(line.split()[1]) for i, line in enumerate(thrust_curve) if i > 1]
-
-    return Motor(float(spec[4]), # wet mass
-        float(spec[4]) - float(spec[3]), # dry mass
-        float(spec[1]) / 2000, # radius
-        float(spec[2]) / 1000, # length
-        force, time) # thrust info
-
-def load_motor(spec, thrust_curve):
-    # get motor values from csv or spreadsheet
-    motor = read_csv(spec)
-
-    # get thrust values from txt file, usually found online
-    time = []
-    force = []
-    with open(thrust_curve, 'r') as thrust_curve:
-        thrust_curve = list(thrust_curve) # allows you to iterate twice
-        time = [float(line.split()[0]) for i, line in enumerate(thrust_curve) if i > 1]
-        force = [float(line.split()[1]) for i, line in enumerate(thrust_curve) if i > 1]
-
-    return Motor(motor["wet_mass"], motor["dry_mass"], motor["radius"], motor["length"], \
-        force, hole_radius=motor["width"], burn_time=time[-1])  
-

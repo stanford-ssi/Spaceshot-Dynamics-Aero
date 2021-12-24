@@ -33,14 +33,14 @@ def spin(profile, gyro=True, dynamic=True, label_end=False, label_mach=False, sh
 
     spin = profile.spin()
     spin = spin.reshape(spin.shape[0],)
-    plt.plot(profile.tt, spin, 'k', label='Expected Spin')
+    newplt.plot(profile.tt, spin, 'k', label='Expected Spin')
 
     if label_end:
         end_burn = profile.motor.t[-1]
-        plt.axvline(end_burn, color='rosybrown', label='End of Motor Burn')
+        newplt.axvline(end_burn, color='rosybrown', label='End of Motor Burn')
     if label_mach:
         mach = profile.tt[np.abs(profile.vel - 343).argmin()]
-        plt.axvline(mach, color='burlywood', label='Mach')
+        newplt.axvline(mach, color='burlywood', label='Mach')
 
     if gyro:
         gyro_stab = profile.gyro_stab_crit()
@@ -58,7 +58,8 @@ def spin(profile, gyro=True, dynamic=True, label_end=False, label_mach=False, sh
     else:
         return fig
 
-def rocket(profile, label_mach=False):
+def rocket(profile, label_mach=False, show=True):
+    fig = plt.figure()
     plt.xlabel('Times (s)')
     plt.ylabel('Coeffs (non-dimensionalized)')
 
@@ -80,9 +81,14 @@ def rocket(profile, label_mach=False):
     plt2.plot(profile.tt, profile.rocket.get_cm_dot(), 'tab:red', label=r'$|C_{M_{\dot{\alpha}}}+C_{M_{\dot{q}}}|$')
 
     plt.legend()
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        return fig
 
-def motor(motor, timesteps=100, show=True):
+def motor(motor, show=True):
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+
     time = motor.t
 
     ax1.set_xlabel('Time (s)')

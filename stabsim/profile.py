@@ -21,7 +21,7 @@ class Profile:
         if length == 0: # assume a length==0 implies simulation should end at end of motor burn
             length = self.motor.t[-1]
         self.tt = np.linspace(0, length, timesteps)
-        self.mass = np.array([self.motor.mass(t) + self.rocket.static_params["Mass"] for t in self.tt])
+        self.mass = np.array([self.motor.mass(t) + self.rocket.static_params['Mass'] for t in self.tt])
 
 
         # Solve eqns of motion #
@@ -29,24 +29,25 @@ class Profile:
         t = self.tt
 
         def model(z0, t):
-            #Function that returs a list of (dxdt, dvdt) over t
+            #Function that returns a list of (dxdt, dvdt) over t
             #TODO: include lift
             # Equations based on https://www.overleaf.com/project/5fe249e8a42b0068add612ab
-            x, v = z0
+            alt, v = z0
             ind = np.abs(self.tt - t).argmin()
-            alt = x * np.cos(np.radians(hangle))
 
             self.rocket.update_coeffs([v], self.aoa, [alt], [self.mass[ind]])
 
             dxdt = v
-            dvdt = self.motor.thrust(t) / (self.mass[ind]) + -9.80665 + \
-                self.drag(alt, v) / (self.mass[ind]) + self.lift(alt, v) / (self.mass[ind])
+            dvdt = self.motor.thrust(t) * np.cos(np.radians(hangle)) / self.mass[ind] + \
+                -9.80665 + \
+                self.drag(alt, v) / (self.mass[ind]) + \
+                self.lift(alt, v) / (self.mass[ind])
             dzdt = [dxdt, dvdt]
 
             return dzdt
         
         z = integrate.odeint(model, z0, t)
-        self.altit = z[:,0] * np.cos(np.radians(hangle))
+        self.altit = z[:,0]
         self.vel = z[:, 1]
 
         self.rocket.update_coeffs(self.vel, self.aoa, self.altit, self.mass, single=False)
@@ -75,11 +76,11 @@ class Profile:
         return np.array([atmo_model(x)[0] for x in altit])
 
     def iz(self):
-        return np.array([self.rocket.static_params["I_z"] + self.motor.iz(time) for time in self.tt])
+        return np.array([self.rocket.static_params['I_z'] + self.motor.iz(time) for time in self.tt])
 
     def ix(self):
         #TODO: intermediate axis from com?
-        return np.array([self.rocket.static_params["I_x"] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
+        return np.array([self.rocket.static_params['I_x'] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
     """
@@ -128,3 +129,6 @@ class Profile:
         gyro_max = np.max(self.gyro_stab_crit())
         dyn_max = np.max(self.dynamic_stab_crit())
         return max(gyro_max, dyn_max)
+
+    def apogee(self):
+        return np.max(self.altit)

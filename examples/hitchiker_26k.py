@@ -1,6 +1,6 @@
 from context import stabsim
 
-from stabsim.motor import load_motor
+from stabsim.motor import Motor
 from stabsim.profile import Profile
 from stabsim.rocket import Rocket
 import stabsim.vis as vis
@@ -13,8 +13,8 @@ motor_thrust = "data/N5800.txt"
 rocket = "data/Hitchiker.csv"
 
 hitchhiker_body = Rocket(os.path.join(script_dir, rocket))
-N5800 = load_motor(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
-hitchhiker = Profile(hitchhiker_body, N5800, 262, launch_altit=29000, timesteps=100)
+n5800 = Motor.fromfiles(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
+hitchhiker = Profile(hitchhiker_body, n5800, 262, launch_altit=29000, timesteps=100)
 
 vis.rocket(hitchhiker, label_mach=True)
 vis.kinematics(hitchhiker)
