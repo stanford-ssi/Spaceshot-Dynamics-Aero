@@ -3,7 +3,7 @@ import tkinter.ttk as ttk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
-class OutputPanel(ttk.Notebook):
+class GraphPanel(ttk.Notebook):
     def __init__(self, parent, controller):
         super().__init__(parent)
 
@@ -22,8 +22,6 @@ class OutputPanel(ttk.Notebook):
         self.draw_frame(rocket, self.rocket_frame)
         self.draw_frame(kinematics, self.kinem_frame)
         self.draw_frame(stability, self.stab_frame)
-
-        kinematics.show()
 
     def draw_frame(self, fig, frame):
         canvas = FigureCanvasTkAgg(fig, master=frame)  

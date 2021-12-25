@@ -16,13 +16,13 @@ class Profile:
         self.motor_pos = motor_pos
         self.aoa = hangle
 
-
         # Time varying constants #
         if length == 0: # assume a length==0 implies simulation should end at end of motor burn
             length = self.motor.t[-1]
         self.tt = np.linspace(0, length, timesteps)
         self.mass = np.array([self.motor.mass(t) + self.rocket.mass for t in self.tt])
-
+        self.cg = np.array([self.motor.mass(t) * (self.rocket.cone_len + self.rocket.frame_len - self.motor.length / 2) for t in self.tt])
+        self.cg = (self.rocket.mass * self.rocket.cg + self.cg) / self.mass
 
         # Solve eqns of motion #
         z0 = [launch_altit, 0] # Initial condition
@@ -30,12 +30,11 @@ class Profile:
 
         def model(z0, t):
             #Function that returns a list of (dxdt, dvdt) over t
-            #TODO: include lift
             # Equations based on https://www.overleaf.com/project/5fe249e8a42b0068add612ab
             alt, v = z0
             ind = np.abs(self.tt - t).argmin()
 
-            self.rocket.update_coeffs([v], self.aoa, [alt], [self.mass[ind]])
+            self.rocket.update_coeffs(self.mach(v=[v], alt=[alt]).tolist(), self.aoa, [alt], [self.mass[ind]], [self.cg[ind]])
 
             dxdt = v
             dvdt = self.motor.thrust(t) * np.cos(np.radians(hangle)) / self.mass[ind] + \
@@ -49,9 +48,13 @@ class Profile:
         z = integrate.odeint(model, z0, t)
         self.altit = z[:,0]
         self.vel = z[:, 1]
-
-        self.rocket.update_coeffs(self.vel, self.aoa, self.altit, self.mass, single=False)
         self.rho = self.rho()
+        self.mach = self.mach()
+
+        self.rocket.update_coeffs(self.mach.tolist(), self.aoa, self.altit, self.mass, self.cg)
+
+        # import pprint
+        # pprint.pprint(self.rocket.memoize)
 
     def drag(self, x, v):
         cd = self.rocket.get_cd()
@@ -63,25 +66,35 @@ class Profile:
         ref_area = np.pi / 4 * (self.rocket.diameter ** 2)
         return 0.5 * self.rho([x]) * (v ** 2) * ref_area * cl * np.sin(np.radians(self.aoa))
 
-    def temp(self, altit=-1):
-        if altit == -1:
-            altit = self.altit
+    def mach(self, v=-1, alt=-1):
+        if v == -1:
+            v = self.vel
 
-        return np.array([atmo_model(x)[1] for x in altit])
+        sos = 20.05 * np.sqrt(self.temp(alt))
+        return v / sos
 
-    def rho(self, altit=-1):
-        if altit == -1:
-            altit = self.altit
+    def temp(self, alt=-1):
+        if alt == -1:
+            alt = self.altit
 
-        return np.array([atmo_model(x)[0] for x in altit])
+        return np.array([atmo_model(x)[1] for x in alt])
+
+    def rho(self, alt=-1):
+        if alt == -1:
+            alt = self.altit
+
+        return np.array([atmo_model(x)[0] for x in alt])
 
     def iz(self):
-        return np.array([self.rocket.iz + self.motor.iz(time) for time in self.tt])
+        return np.array([self.rocket.iz + self.motor.iz(t) for t in self.tt])
 
     def ix(self):
-        #TODO: intermediate axis from com?
-        return np.array([self.rocket.ix + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
-            for time in self.tt])
+        rocket_ix = self.rocket.ix + self.rocket.mass * (self.rocket.cg - self.cg)**2
+        motor_cg = self.rocket.cone_len + self.rocket.frame_len - self.motor.length / 2
+        motor_ix = np.array([self.motor.ix(t) for t in self.tt])
+        motor_mass = np.array([self.motor.mass(t) for t in self.tt])
+        motor_ix = motor_ix + motor_mass * (motor_cg - self.cg)**2
+        return rocket_ix + motor_ix
 
     """
     Gyroscopic stability criterion in radians per second
@@ -107,7 +120,7 @@ class Profile:
 
         dyn_spin_crit = self.vel * np.sqrt(2 * self.rho * ref_area * self.rocket.diameter * cm_alpha * self.ix()) * \
             (cl_alpha - cd - ((self.mass * self.rocket.diameter ** 2 / self.ix()) * (cm_alpha_dot_plus_cm_q))) / \
-                (2 * (self.iz() * cl_alpha + self.mass * self.rocket.diameter ** 2 * cm_p_alpha))
+            (2 * (self.iz() * cl_alpha + self.mass * self.rocket.diameter ** 2 * cm_p_alpha))
         return np.abs(dyn_spin_crit)
 
     def spin(self):

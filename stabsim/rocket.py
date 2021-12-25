@@ -67,9 +67,10 @@ class Rocket:
         replacements = {
             'INSERT_NOSELEN' : str(self.cone_len),
             'INSERT_BODYLEN' : str(self.frame_len),
+            'INSERT_ZCG' : str(rad),
             'INSERT_LEN' : str(nx),
-            'INSERT_X' : insert_newlines(','.join([str(x) for x in xs])),
-            'INSERT_R' : insert_newlines(','.join([str(r) for r in rs]))
+            'INSERT_XS' : insert_newlines(','.join([str(x) for x in xs])),
+            'INSERT_RS' : insert_newlines(','.join([str(r) for r in rs]))
         }
         for key, value in replacements.items():
             template = template.replace(key, value)
@@ -96,47 +97,37 @@ class Rocket:
         self.cma_dot = []
         self.cmq_dot = []
 
-    def fill_coeffs(self):
-        fill_list(self.cd)
-        fill_list(self.cm)
-        fill_list(self.cl)
-        fill_list(self.cma_dot)
-        fill_list(self.cmq_dot)
-
-    def update_coeffs(self, vel, aoa, altit, mass, single=True):
+    def update_coeffs(self, machs, aoa, altits, masses, cgs, mach_scale=10, altit_scale=0.01, mass_scale=10):
         self.clear_coeffs()
 
-        key = (round(vel[0]), round(altit[0])) # Memoization so we can use this during odeint
-        if single and key in self.memoize.keys():
-            cd, cm, cl, cma, cmq = self.memoize[key]
-            self.cd = [cd]
-            self.cm = [cm]
-            self.cl = [cl]
-            self.cma_dot = [cma]
-            self.cmq_dot = [cmq]
-            return
+        for mach, altit, mass, cg in zip(machs, altits, masses, cgs):
+            key = (round(mach*mach_scale), round(altit*altit_scale), round(mass*mass_scale))
+            if key in self.memoize:
+                cd, cm, cl, cma, cmq = self.memoize[key]
+                self.cd.append(cd)
+                self.cm.append(cm)
+                self.cl.append(cl)
+                self.cma_dot.append(cma)
+                self.cmq_dot.append(cmq)
+                continue
 
-        for i in range(len(vel)):
-            x_cm = (self.mass * self.cg + (mass[i] - self.mass)) / mass[i]
-            lookup_results = lookup([vel[i] / 343], # mach nuumber TODO: is constant ok?
-                [aoa],                              # angle of attack
-                [altit[i]],                         # altitude
-                x_cm,                               # vehicle center of mass
-                mass[i],                            # vehical mass
-                template=self.dcm)                            
+            lookup_results = lookup([mach], # mach number 
+                [aoa],                      # angle of attack
+                [altit],                    # altitude
+                cg,                         # vehicle center of mass
+                mass,                       # vehical mass
+                template=self.dcm)
+
             coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
             self.cd.append(self.last_val[0] if coeffs['CD'] == 'NDM' or math.isnan(coeffs['CD']) else coeffs['CD'] )
             self.cm.append(self.last_val[1] if coeffs['CM'] == 'NDM' or math.isnan(coeffs['CM']) else coeffs['CM'])
             self.cl.append(self.last_val[2] if coeffs['CL'] == 'NDM' or math.isnan(coeffs['CL']) else coeffs['CL'])
             self.cma_dot.append(self.last_val[3] if math.isnan(coeffs['CMAD']) else coeffs['CMAD'])
             self.cmq_dot.append(self.last_val[4] if math.isnan(coeffs['CMQ']) else coeffs['CMQ'])
-        
-        self.fill_coeffs()
 
-        if single:
-            self.last_val = (self.cd[0], self.cm[0], self.cl[0], self.cma_dot[0], self.cmq_dot[0])
+            self.last_val = (self.cd[-1], self.cm[-1], self.cl[-1], self.cma_dot[-1], self.cmq_dot[-1])
             self.memoize[key] = self.last_val
-
+                    
     def get_cd(self, datcom=True): # Drag coefficient
         return np.array(self.cd) if datcom else 0.3
         # Source: https://www.hindawi.com/journals/ijae/2020/6043721/ (Figure 5)

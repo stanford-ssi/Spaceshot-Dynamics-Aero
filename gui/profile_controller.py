@@ -16,12 +16,14 @@ class Controller:
 
         self.profile = None
 
-    def vis(self):
+    def new_profile(self):
         self.profile = Profile(self.rocket, self.motor, self.init_spin, 
             launch_altit=self.launch_altit, 
             length=self.length, 
             hangle=self.hangle, 
             timesteps=self.timesteps)
+
+    def vis(self):
         kinem = vis.kinematics(self.profile, rho=True, show=False)
         rocket = vis.rocket(self.profile, label_mach=True, show=False)
         spin = vis.spin(self.profile, label_end=True, label_mach=True, show=False)

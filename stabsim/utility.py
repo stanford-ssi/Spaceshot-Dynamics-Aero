@@ -53,7 +53,7 @@ def atmo_model(altitude):
     # Get air density in kg/m^3
     rho = output.d[5] * 1000
 
-    # Get temperature
+    # Get temperature in K
     temp = output.t[1]
     return rho, temp
 

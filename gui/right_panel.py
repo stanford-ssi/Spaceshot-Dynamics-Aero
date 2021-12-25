@@ -1,7 +1,7 @@
 import tkinter as tk 
 import tkinter.ttk as ttk
 
-from .output_panel import OutputPanel
+from .output_panel import GraphPanel
 from .ScrollableFrame import ScrollableFrame
 
 class RightPanel(ttk.Frame):
@@ -11,16 +11,20 @@ class RightPanel(ttk.Frame):
         ttk.Label(self, text="Output").grid(row=0, column=0, stick='ns')
         self.rowconfigure(0, weight=0)
 
-        self.output = OutputPanel(self, controller)
-        self.output.grid(row=1, column=0, stick='ns')
+        self.graphs = GraphPanel(self, controller)
+        self.graphs.grid(row=1, column=0, stick='ns')
         self.rowconfigure(1, weight=4)
 
         self.output_bar = ttk.Frame(self)
         self.output_bar.grid(row=2, column=0, stick='nsew')
         ttk.Label(self.output_bar, text="Apogee (km): ").grid(row=0, column=0, padx=5)
-        self.apogee = ttk.Label(self.output_bar, text="NA").grid(row=0, column=1, padx=15)
+        self.apogee = ttk.Label(self.output_bar, text="NA")
+        self.apogee.grid(row=0, column=1, padx=15)
         ttk.Label(self.output_bar, text="Min Speed (rad/s): ").grid(row=0, column=2, padx=5)
-        self.speed = ttk.Label(self.output_bar, text="NA").grid(row=0, column=3, padx=15)
+        self.speed = ttk.Label(self.output_bar, text="NA")
+        self.speed.grid(row=0, column=3, padx=15)
+        self.pb = ttk.Progressbar(self.output_bar, mode='indeterminate')
+        self.pb.grid(row=0, column=4, padx=5)
         self.rowconfigure(2, weight=0)
 
         self.console = ScrollableFrame(self)
@@ -33,5 +37,5 @@ class RightPanel(ttk.Frame):
         self.console.log(text)
 
     def update_output(self, apogee, speed):
-        self.apogee.config(str(apogee))
-        self.speed.config(str(speed))
+        self.apogee.config(text=str(apogee))
+        self.speed.config(text=str(speed))

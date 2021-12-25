@@ -34,31 +34,40 @@ class LeftPanel(ttk.Frame):
 
         self.button_bar = ttk.Frame(self)
         self.button_bar.grid(row=2, column=0, stick='nsew')
-        ttk.Button(self.button_bar, text="Upload Files", style='Accent.TButton', command=self.save).grid(row=0, column=0, padx=5)
-        ttk.Button(self.button_bar, text="Clear Data", style='Accent.TButton', command=self.clear).grid(row=0, column=1, padx=5)
-        ttk.Button(self.button_bar, text="Run Configuration", style='Accent.TButton', command=self.run).grid(row=0, column=2, padx=5)
+        self.ub = ttk.Button(self.button_bar, text="Upload Files", style='Accent.TButton', command=self.save)
+        self.ub.grid(row=0, column=0, padx=5)
+        self.cb = ttk.Button(self.button_bar, text="Clear Data", style='Accent.TButton', command=self.clear)
+        self.cb.grid(row=0, column=1, padx=5)
+        self.rb = ttk.Button(self.button_bar, text="Run Configuration", style='Accent.TButton', command=self.run)
+        self.rb.grid(row=0, column=2, padx=5)
         self.rowconfigure(2, weight=1)
 
     def save(self):
+        self.ub.config(state=tk.DISABLED)
         self.input_pane.update()
         self.rocket_pane.update(self.controller.motor, self.controller.rocket)
         self.log("Updated specs using uploaded files")
+        self.ub.config(state=tk.NORMAL)
 
     def run(self):
+        self.rb.config(state=tk.DISABLED)
+        self.log("Running new flight profile")
         if (self.input_pane.set() == -1 or self.rocket_pane.set() == -1):
             self.log("Aborted running flight profile")
-            return
         else:
-            self.log("Running new flight profile")
-        self.parent.master.run()
-        self.file_pane.clear()
+            self.parent.master.run()
+            self.file_pane.clear()
+            self.log("Simulation completed")
+        self.rb.config(state=tk.NORMAL)
 
     def clear(self):
+        self.cb.config(state=tk.DISABLED)
         self.controller.clear()
         self.input_pane.update()
         self.rocket_pane.update(self.controller.motor, self.controller.rocket)
         self.file_pane.clear()
         self.log("Cleared flight data")
+        self.cb.config(state=tk.NORMAL)
 
     def log(self, text):
         self.parent.master.log(text)

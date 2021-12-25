@@ -17,7 +17,7 @@ def kinematics(profile, rho=True, show=True):
     if rho:
         ax2 = plt.twinx()
         ax2.set_ylabel('Air Density(kg/m^3)')
-        ax2.plot(profile.tt, profile.rho(), color='tab:red')
+        ax2.plot(profile.tt, profile.rho, color='tab:red')
 
     if show:
         plt.show()
@@ -26,35 +26,34 @@ def kinematics(profile, rho=True, show=True):
 
 def spin(profile, gyro=True, dynamic=True, label_end=False, label_mach=False, show=True):
     fig = plt.figure()
-    newplt = fig.add_subplot(111)
 
-    newplt.set_xlabel('Time (s)')
-    newplt.set_ylabel('Spin (rad/s)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Spin (rad/s)')
 
     spin = profile.spin()
     spin = spin.reshape(spin.shape[0],)
-    newplt.plot(profile.tt, spin, 'k', label='Expected Spin')
+    plt.plot(profile.tt, spin, 'k', label='Expected Spin')
 
     if label_end:
         end_burn = profile.motor.t[-1]
-        newplt.axvline(end_burn, color='rosybrown', label='End of Motor Burn')
+        plt.axvline(end_burn, color='rosybrown', label='End of Motor Burn')
     if label_mach:
-        mach = profile.tt[np.abs(profile.vel - 343).argmin()]
-        newplt.axvline(mach, color='burlywood', label='Mach')
+        mach = profile.tt[np.abs(profile.mach - 1).argmin()]
+        plt.axvline(mach, color='burlywood', label='Mach')
 
     if gyro:
         gyro_stab = profile.gyro_stab_crit()
-        newplt.plot(profile.tt, gyro_stab, 'tab:blue', label='Gyroscopic Stability Threshold')
-        newplt.fill_between(profile.tt, 0, newplt.get_ylim()[1], where=spin<gyro_stab, facecolor='red', alpha=0.5)
+        plt.plot(profile.tt, gyro_stab, 'tab:blue', label='Gyroscopic Stability Threshold')
+        plt.fill_between(profile.tt, 0, plt.ylim()[1], where=spin<gyro_stab, facecolor='red', alpha=0.5)
     if dynamic:
         dyn_stab = profile.dynamic_stab_crit()
-        newplt.plot(profile.tt, dyn_stab, 'tab:green', label='Dynamic Stability Threshold')
-        newplt.fill_between(profile.tt, 0, newplt.get_ylim()[1], where=spin<dyn_stab, facecolor='red', alpha=0.5)
+        plt.plot(profile.tt, dyn_stab, 'tab:green', label='Dynamic Stability Threshold')
+        plt.fill_between(profile.tt, 0, plt.ylim()[1], where=spin<dyn_stab, facecolor='red', alpha=0.5)
 
-    newplt.legend(loc='best')
+    plt.legend(loc='best')
 
     if show:
-        newplt.show()
+        plt.show()
     else:
         return fig
 
@@ -68,12 +67,10 @@ def rocket(profile, label_mach=False, show=True):
     plt.plot(profile.tt, profile.rocket.get_cl_alpha(), label=r'$C_{L_\alpha}$')
 
     if label_mach:
-        temp = profile.temp()
-        mach = 343 * np.sqrt(temp / 300)
-        mach_trans = profile.tt[np.abs(profile.vel - mach).argmin()]
+        mach_trans = profile.tt[np.abs(profile.mach - 1).argmin()]
 
         plt.axvline(mach_trans, color='burlywood', label='Mach')
-        plt.fill_between(profile.tt, 0, plt.ylim()[1], where=np.logical_and(profile.vel>0.6*mach, profile.vel<1.4*mach), facecolor='k', alpha=0.3)
+        plt.fill_between(profile.tt, 0, plt.ylim()[1], where=np.logical_and(profile.mach>0.8, profile.mach<1.2), facecolor='k', alpha=0.3)
 
     plt.legend()
 
@@ -96,11 +93,11 @@ def motor(motor, show=True):
     ax1.plot(time, [motor.mass(t) for t in time])
 
     ax2.set_xlabel('Time (s)')
-    ax2.set_ylabel('I_x (kg*m/s)')
+    ax2.set_ylabel(r'$I_x$ (kg*m/s)')
     ax2.plot(time, [motor.ix(t) for t in time])
 
     ax3.set_xlabel('Time (s)')
-    ax3.set_ylabel('I_z (kg*m/s)')
+    ax3.set_ylabel(r'$I_z$ (kg*m/s)')
     ax3.plot(time, [motor.iz(t) for t in time])
 
     if show:

@@ -40,7 +40,7 @@ def lookup(machs, alphas, alts, cg, mass, template=TEMPLATE_NAME):
         'INSERT_NALPHA': str(len(alphas)),
         'INSERT_ALTS': ','.join([str(alt) for alt in alts]),
         'INSERT_NALT': str(len(alts)),
-        'INSERT_CG': str(cg),
+        'INSERT_XCG': str(cg),
         'INSERT_WEIGHT': str(mass)
     }
 

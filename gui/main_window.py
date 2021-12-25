@@ -7,6 +7,8 @@ from .right_panel import RightPanel
 from .profile_controller import Controller
 
 import os
+import threading
+import queue
 
 class MainWindow(tk.Tk):
     def __init__(self):
@@ -31,6 +33,7 @@ class MainWindow(tk.Tk):
 
         self.right_panel = RightPanel(self.mainframe, self.controller)
         self.right_panel.grid(row=0, column=1, sticky='nsew')
+        self.queue = queue.Queue()
 
         self.mainframe.columnconfigure(0, weight=1)
         self.mainframe.columnconfigure(1, weight=3)
@@ -39,9 +42,30 @@ class MainWindow(tk.Tk):
         self.log("Welcome to Stabsim")
 
     def run(self):
-        motor, rocket, kinem, spin = self.controller.vis()
-        self.right_panel.output.draw(motor, rocket, kinem, spin)
-        self.right_panel.update(self.controller.profile.apogee(), self.controller.profile.min_spin())
+        self.right_panel.pb.start()
+        ThreadedTask(self.queue, self.controller).start()
+        self.process_queue()
+
+    def process_queue(self):
+        try:
+            self.queue.get_nowait()
+            motor, rocket, kinem, spin = self.controller.vis()
+            self.right_panel.graphs.draw(motor, rocket, kinem, spin)
+            self.right_panel.update_output(self.controller.profile.apogee(), self.controller.profile.min_spin())   
+            self.right_panel.pb.stop()
+        except queue.Empty:
+            self.after(100, self.process_queue)
 
     def log(self, text):
         self.right_panel.log(text)
+
+
+class ThreadedTask(threading.Thread):
+    def __init__(self, queue, controller):
+        super().__init__()
+        self.queue = queue
+        self.controller = controller
+    
+    def run(self):
+        self.controller.new_profile()
+        self.queue.put("fini")
