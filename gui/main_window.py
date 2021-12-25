@@ -49,10 +49,14 @@ class MainWindow(tk.Tk):
     def process_queue(self):
         try:
             self.queue.get_nowait()
+
             motor, rocket, kinem, spin = self.controller.vis()
             self.right_panel.graphs.draw(motor, rocket, kinem, spin)
             self.right_panel.update_output(self.controller.profile.apogee(), self.controller.profile.min_spin())   
             self.right_panel.pb.stop()
+            
+            self.left_panel.rb.config(state=tk.NORMAL)
+            self.log("Simulation completed")
         except queue.Empty:
             self.after(100, self.process_queue)
 

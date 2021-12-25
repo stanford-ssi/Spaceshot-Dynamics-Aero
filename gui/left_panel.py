@@ -57,8 +57,6 @@ class LeftPanel(ttk.Frame):
         else:
             self.parent.master.run()
             self.file_pane.clear()
-            self.log("Simulation completed")
-        self.rb.config(state=tk.NORMAL)
 
     def clear(self):
         self.cb.config(state=tk.DISABLED)
