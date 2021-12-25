@@ -5,8 +5,8 @@ import stabsim.vis as vis
 
 class Controller:
     def __init__(self):
-        self.rocket = Rocket(None, dcm=None)
-        self.motor = Motor(0, 0, 0, 0, [])
+        self.rocket = Rocket.empty()
+        self.motor = Motor.empty()
         
         self.init_spin = 0
         self.launch_altit = 0
@@ -29,8 +29,8 @@ class Controller:
         return motor, rocket, kinem, spin
 
     def clear(self):
-        self.rocket = Rocket(None, dcm=None)
-        self.motor = Motor(0, 0, 0, 0, [])
+        self.rocket = Rocket.empty()
+        self.motor = Motor.empty()
         
         self.init_spin = 0
         self.launch_altit = 0

@@ -45,10 +45,13 @@ class LeftPanel(ttk.Frame):
         self.log("Updated specs using uploaded files")
 
     def run(self):
-        self.input_pane.set()
-        self.rocket_pane.set()
-        self.log("Running new flight profile")
-        self.parent.run()
+        if (self.input_pane.set() == -1 or self.rocket_pane.set() == -1):
+            self.log("Aborted running flight profile")
+            return
+        else:
+            self.log("Running new flight profile")
+        self.parent.master.run()
+        self.file_pane.clear()
 
     def clear(self):
         self.controller.clear()

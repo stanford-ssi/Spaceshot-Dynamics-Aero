@@ -12,9 +12,9 @@ motor_dim = "data/N5800_dim.csv"
 motor_thrust = "data/N5800.txt"
 rocket = "data/Hitchiker.csv"
 
-hitchhiker_body = Rocket(os.path.join(script_dir, rocket))
+hitchhiker = Rocket.fromfile(os.path.join(script_dir, rocket))
 n5800 = Motor.fromfiles(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
-hitchhiker = Profile(hitchhiker_body, n5800, 262, launch_altit=29000, timesteps=100)
+hitchhiker = Profile(hitchhiker, n5800, 262, launch_altit=29000, timesteps=100)
 
 vis.rocket(hitchhiker, label_mach=True)
 vis.kinematics(hitchhiker)

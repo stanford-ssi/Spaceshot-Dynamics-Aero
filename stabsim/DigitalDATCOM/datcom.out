@@ -31,22 +31,22 @@
 0******************************  INPUT DATA CARDS  ******************************
 
   $FLTCON NMACH=1,                                                                  ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          MACH(1)=4.81,                                                          
+          MACH(1)=0.013,                                                         
           NALPHA=1,                                                                 ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
           ALSCHD(1)=4,                                                              ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
           NALT=1,                                                                   ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          ALT(1)=32059.462,                                                      
+          ALT(1)=0.013,                                                          
           STMACH=0.99,TSMACH=1.01,                                               
-          WT=6.920999999999999,LOOP=3.$                                          
+          WT=0.6472,LOOP=3.$                                                     
   $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
-  $SYNTHS XCG=1.0834561479554978,ZCG=0.0$                                        
-  $BODY   BNOSE=2.0,BTAIL=1.0,BLN=0.25,BLA=1.45,NX=16,                              ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+  $SYNTHS XCG=0.6702328800988875,ZCG=0.0$                                        
+  $BODY   BNOSE=2.0,BTAIL=1.0,BLN=0.27432,BLA=0.7239,NX=17,                         ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
           X(1)=0.0,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,                  
-         0.2,0.22,0.24,0.25,0.975,1.7,                                              ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          R(1)=0.0,0.0133086527,0.025098052,0.03550617,                          
-         0.0446412092,0.0525889847,0.0594179737,0.0651828572,                       ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-         0.0699270476,0.0736845121,0.0764810885,0.0783354233,                       ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-         0.0792596147,0.079375,0.079375,0.079375$                                   ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+         0.2,0.22,0.24,0.26,0.27432,0.63627,0.99822,                                ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+          R(1)=0.0,0.0073192966,0.0140197409,0.0201181729,                       
+         0.0256293921,0.030566358,0.0349403578,0.0387611456,                        ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+         0.042037058,0.0447751099,0.0469810721,0.0486595343,                        ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+         0.049813953,0.0504466883,0.05058,0.05058,0.05058$                          ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
  DIM M                                                                           
  DERIV DEG                                                                       
  CASEID RUN                                                                      
@@ -54,22 +54,22 @@
 1          THE FOLLOWING IS A LIST OF ALL INPUT CARDS FOR THIS CASE.
 0
   $FLTCON NMACH=1,                                                               
-          MACH(1)=4.81,                                                          
+          MACH(1)=0.013,                                                         
           NALPHA=1,                                                              
           ALSCHD(1)=4,                                                           
           NALT=1,                                                                
-          ALT(1)=32059.462,                                                      
+          ALT(1)=0.013,                                                          
           STMACH=0.99,TSMACH=1.01,                                               
-          WT=6.920999999999999,LOOP=3.$                                          
+          WT=0.6472,LOOP=3.$                                                     
   $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
-  $SYNTHS XCG=1.0834561479554978,ZCG=0.0$                                        
-  $BODY   BNOSE=2.0,BTAIL=1.0,BLN=0.25,BLA=1.45,NX=16,                           
+  $SYNTHS XCG=0.6702328800988875,ZCG=0.0$                                        
+  $BODY   BNOSE=2.0,BTAIL=1.0,BLN=0.27432,BLA=0.7239,NX=17,                      
           X(1)=0.0,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,                  
-         0.2,0.22,0.24,0.25,0.975,1.7,                                           
-          R(1)=0.0,0.0133086527,0.025098052,0.03550617,                          
-         0.0446412092,0.0525889847,0.0594179737,0.0651828572,                    
-         0.0699270476,0.0736845121,0.0764810885,0.0783354233,                    
-         0.0792596147,0.079375,0.079375,0.079375$                                
+         0.2,0.22,0.24,0.26,0.27432,0.63627,0.99822,                             
+          R(1)=0.0,0.0073192966,0.0140197409,0.0201181729,                       
+         0.0256293921,0.030566358,0.0349403578,0.0387611456,                     
+         0.042037058,0.0447751099,0.0469810721,0.0486595343,                     
+         0.049813953,0.0504466883,0.05058,0.05058,0.05058$                       
  DIM M                                                                           
  DERIV DEG                                                                       
  CASEID RUN                                                                      
@@ -91,11 +91,11 @@
   MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
  NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
               M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 4.810   32059.46    1457.58   8.8122E+02     228.549     1.3114E+06             0.009      0.104     0.104     1.000     0.000
+0 0.013       0.01       4.42   1.0133E+05     288.150     3.0146E+05             0.009      0.104     0.104    -0.000     0.000
 0                                                               -------------------DERIVATIVE (PER DEGREE)-------------------
 0 ALPHA     CD       CL       CM       CN       CA       XCP        CLA          CMA          CYB          CNB          CLB
 0
-    4.0      NaN      NaN    2.7949     NaN      NaN      NaN    0.000E+00    0.000E+00   -0.000E+00   -0.000E+00    0.000E+00
+    4.0    0.258    0.117   -0.1414   0.135    0.249   -1.050    2.924E-02   -3.534E-02   -2.924E-02    3.534E-02    0.000E+00
 1                               AUTOMATED STABILITY AND CONTROL METHODS PER APRIL 1976 VERSION OF DATCOM
                                                          DYNAMIC DERIVATIVES
                                                    DATCOM BODY ALONE CONFIGURATION
@@ -105,14 +105,14 @@
   MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
  NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
               M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 4.810   32059.46    1457.58   8.8122E+02     228.549     1.3114E+06             0.009      0.104     0.104     1.000     0.000
+0 0.013       0.01       4.42   1.0133E+05     288.150     3.0146E+05             0.009      0.104     0.104    -0.000     0.000
                                                     DYNAMIC DERIVATIVES (PER DEGREE)
 0           -------PITCHING-------    -----ACCELERATION------    --------------ROLLING--------------    --------YAWING--------
 0   ALPHA       CLQ          CMQ           CLAD         CMAD         CLP          CYP          CNP          CNR          CLR
 0
-     4.00    2.379E-28   -1.535E-27     3.299E-29    3.598E-28      NDM          NDM          NDM          NDM        0.000E+00
+     4.00    4.811E+00   -2.338E+01     4.377E-01   -2.248E+01      NDM          NDM          NDM          NDM        0.000E+00
 0*** NDM PRINTED WHEN NO DATCOM METHODS EXIST
-0*** VEHICLE WEIGHT =      6.00 N. 
-0*** LEVEL FLIGHT LIFT COEFFICIENT = 0.20779
+0*** VEHICLE WEIGHT =      0.65 N. 
+0*** LEVEL FLIGHT LIFT COEFFICIENT =26.68588
  Return to main program from M57O71
 1 END OF JOB.

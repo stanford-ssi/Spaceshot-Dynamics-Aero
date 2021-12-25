@@ -21,7 +21,7 @@ class Profile:
         if length == 0: # assume a length==0 implies simulation should end at end of motor burn
             length = self.motor.t[-1]
         self.tt = np.linspace(0, length, timesteps)
-        self.mass = np.array([self.motor.mass(t) + self.rocket.static_params['Mass'] for t in self.tt])
+        self.mass = np.array([self.motor.mass(t) + self.rocket.mass for t in self.tt])
 
 
         # Solve eqns of motion #
@@ -55,12 +55,12 @@ class Profile:
 
     def drag(self, x, v):
         cd = self.rocket.get_cd()
-        ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
+        ref_area = np.pi / 4 * (self.rocket.diameter ** 2)
         return -cd * ref_area  * 0.5 * (v ** 2) * self.rho([x])
     
     def lift(self, x, v):
         cl = self.rocket.get_cl_alpha()
-        ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
+        ref_area = np.pi / 4 * (self.rocket.diameter ** 2)
         return 0.5 * self.rho([x]) * (v ** 2) * ref_area * cl * np.sin(np.radians(self.aoa))
 
     def temp(self, altit=-1):
@@ -76,11 +76,11 @@ class Profile:
         return np.array([atmo_model(x)[0] for x in altit])
 
     def iz(self):
-        return np.array([self.rocket.static_params['I_z'] + self.motor.iz(time) for time in self.tt])
+        return np.array([self.rocket.iz + self.motor.iz(time) for time in self.tt])
 
     def ix(self):
         #TODO: intermediate axis from com?
-        return np.array([self.rocket.static_params['I_x'] + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
+        return np.array([self.rocket.ix + self.motor.ix(time) + self.motor.mass(time) * self.motor_pos**2 \
             for time in self.tt])
 
     """
@@ -88,9 +88,9 @@ class Profile:
     Stability of moving spinning top
     """
     def gyro_stab_crit(self):
-        ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
+        ref_area = np.pi / 4 * (self.rocket.diameter ** 2)
         gyro_spin_crit = self.vel / self.ix() * np.sqrt(2 * self.rho * self.iz() * ref_area * \
-            np.abs(self.rocket.get_cm_alpha()) * self.rocket.static_params['Diameter']) 
+            np.abs(self.rocket.get_cm_alpha()) * self.rocket.diameter) 
         return np.abs(gyro_spin_crit)
 
     """
@@ -103,11 +103,11 @@ class Profile:
         cd = self.rocket.get_cd() # Drag coeff
         cm_alpha_dot_plus_cm_q = self.rocket.get_cm_dot() # Pitch damping moment coefficient (due to rate of change of angle of attack plus tranverse angular velocity)
         cm_p_alpha = self.rocket.get_cm_p_alpha() # Magnus moment coeff
-        ref_area = np.pi / 4 * (self.rocket.static_params['Diameter'] ** 2)
+        ref_area = np.pi / 4 * (self.rocket.diameter ** 2)
 
-        dyn_spin_crit = self.vel * np.sqrt(2 * self.rho * ref_area * self.rocket.static_params['Diameter'] * cm_alpha * self.ix()) * \
-            (cl_alpha - cd - ((self.mass * self.rocket.static_params['Diameter'] ** 2 / self.ix()) * (cm_alpha_dot_plus_cm_q))) / \
-                (2 * (self.iz() * cl_alpha + self.mass * self.rocket.static_params['Diameter'] ** 2 * cm_p_alpha))
+        dyn_spin_crit = self.vel * np.sqrt(2 * self.rho * ref_area * self.rocket.diameter * cm_alpha * self.ix()) * \
+            (cl_alpha - cd - ((self.mass * self.rocket.diameter ** 2 / self.ix()) * (cm_alpha_dot_plus_cm_q))) / \
+                (2 * (self.iz() * cl_alpha + self.mass * self.rocket.diameter ** 2 * cm_p_alpha))
         return np.abs(dyn_spin_crit)
 
     def spin(self):
@@ -116,8 +116,8 @@ class Profile:
 
         def spin_damping(omega, t, C, profile):
             ind = np.abs(profile.tt - t).argmin()
-            ref_area = np.pi / 4 * (profile.rocket.static_params['Diameter'] ** 2)
-            domegadt = 0.5 * C * profile.rho[ind] * profile.vel[ind] * ref_area * omega * profile.rocket.static_params['Diameter']
+            ref_area = np.pi / 4 * (profile.rocket.diameter ** 2)
+            domegadt = 0.5 * C * profile.rho[ind] * profile.vel[ind] * ref_area * omega * profile.rocket.diameter
             return domegadt
         return integrate.odeint(spin_damping, omega0, self.tt, args=(C_spin, self))
 

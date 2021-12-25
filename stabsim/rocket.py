@@ -5,24 +5,57 @@ import math
 from .DigitalDATCOM.datcom_lookup import lookup
 
 class Rocket:
-    def __init__(self, rocket_params, dcm=''):
-        self.static_params = read_csv(rocket_params)
-        self.dcm = self.create_dcm() if dcm == '' else dcm
-        self.clear_coeffs
+    def __init__(self, mass, cg, diameter, iz, ix, surf_area, cone_len, frame_len, dcm=None):
+        self.mass = mass
+        self.cg = cg
+        self.diameter = diameter
+        self.iz = iz
+        self.ix = ix
+        self.surf_area = surf_area
+        self.cone_len = cone_len
+        self.frame_len = frame_len
+
+        self.dcm = dcm if dcm != None else self.create_dcm()
+        
+        self.clear_coeffs()
         self.memoize = {}
         self.last_val = (0,0,0,0,0)
 
+    @classmethod
+    def empty(cls):
+        return Rocket(0, 0, 0, 0, 0, 0, 0, 0, dcm='')
+
+    @classmethod
+    def fromfile(cls, rocket_params, dcm=None):
+        rocket = Rocket.empty()
+        rocket.set_spec(rocket_params)
+        rocket.dcm = dcm
+        rocket.update_dcm()
+        return rocket
+
+    def set_spec(self, file):
+        dict = read_csv(file)
+        try: 
+            self.mass = float(dict['Mass']) if 'Mass' in dict else 0
+            self.cg = float(dict['CG']) if 'CG' in dict else 0
+            self.diameter = float(dict['Diameter']) if 'Diameter' in dict else 0
+            self.iz = float(dict['I_z']) if 'I_z' in dict else 0
+            self.ix = float(dict['I_x']) if 'I_x' in dict else 0
+            self.surf_area = float(dict['Surface Area']) if 'Surface Area' in dict else 0
+            self.cone_len = float(dict['Nosecone Length']) if 'Nosecone Length' in dict else 0
+            self.frame_len = float(dict['Airframe Length']) if 'Airframe Length' in dict else 0
+        except ValueError:
+            return -1
+
     def create_dcm(self):
         # generate ogive equation based off given parameters
-        nos_lnt = float(self.static_params['Nosecone Length'])
-        rad = float(self.static_params['Diameter']) / 2
-        air_lnt = float(self.static_params['Airframe Length'])
-        rho = (rad**2 + nos_lnt**2) / 2 / rad
+        rad = self.diameter / 2
+        rho = (rad**2 + self.cone_len**2) / 2 / rad
         def ogive(x):
-            ans = np.sqrt(rho**2 - (nos_lnt - x)**2) + rad - rho
+            ans = np.sqrt(rho**2 - (self.cone_len - x)**2) + rad - rho
             return abs(round(ans, 10))
-        nosecone = np.arange(0, nos_lnt, 0.02)
-        airframe = np.linspace(nos_lnt, nos_lnt + air_lnt, num=3) 
+        nosecone = np.arange(0, self.cone_len, 0.02)
+        airframe = np.linspace(self.cone_len, self.cone_len + self.frame_len, num=3) 
         xs = np.concatenate((nosecone, airframe)).tolist()
         rs = [ogive(x) for x in nosecone] + [rad for x in airframe]
         nx = len(xs)
@@ -32,8 +65,8 @@ class Rocket:
         with open(join((path, 'DIGITALDATCOM', 'datcom_template.txt')), 'r') as f:
             template = f.read()
         replacements = {
-            'INSERT_NOSELEN' : str(nos_lnt),
-            'INSERT_BODYLEN' : str(air_lnt),
+            'INSERT_NOSELEN' : str(self.cone_len),
+            'INSERT_BODYLEN' : str(self.frame_len),
             'INSERT_LEN' : str(nx),
             'INSERT_X' : insert_newlines(','.join([str(x) for x in xs])),
             'INSERT_R' : insert_newlines(','.join([str(r) for r in rs]))
@@ -53,7 +86,7 @@ class Rocket:
 
     def update_dcm(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        if not os.path.exists(join(path, 'DigitalDATCOM', self.dcm)):
+        if not self.dcm or not os.path.exists(join((path, 'DigitalDATCOM', str(self.dcm)))):
             self.dcm = self.create_dcm()
 
     def clear_coeffs(self):
@@ -84,7 +117,7 @@ class Rocket:
             return
 
         for i in range(len(vel)):
-            x_cm = (self.static_params['Mass'] * self.static_params['CG'] + (mass[i] - self.static_params['Mass'])) / mass[i]
+            x_cm = (self.mass * self.cg + (mass[i] - self.mass)) / mass[i]
             lookup_results = lookup([vel[i] / 343], # mach nuumber TODO: is constant ok?
                 [aoa],                              # angle of attack
                 [altit[i]],                         # altitude

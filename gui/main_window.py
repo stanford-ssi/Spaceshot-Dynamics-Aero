@@ -19,7 +19,7 @@ class MainWindow(tk.Tk):
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
         self.tk.call('source', os.path.join(dir_path, 'sun-valley.tcl'))
-        self.tk.call('set_theme', 'light')
+        self.tk.call('set_theme', 'dark')
 
         self.controller = Controller()
 
