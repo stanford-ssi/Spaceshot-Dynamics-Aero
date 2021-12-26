@@ -47,6 +47,7 @@ As you can see, sample motors and airframe data is provided in the `data\` folde
 2. a csv with motor file specification
 3. raw numerical values
 4. any combination thereof
+
 Airframe information can be loaded using
 1. a csv file with airframe specifications
 2. a DATCOM file with airframe specifications
@@ -56,7 +57,7 @@ For examples of how to format .csv files again refer to the `data\` folder.
 Clearly this is a lot of data. The graphical application makes it all a bit easier to manage. You can either load information using these file formats or manually input your vehicles specifications. Be warned that the GUI does abstract away a few features that are more readily accessible via the CLI.
 ![Stabsim at Startup](/assets/startup.PNG)
 ![Spaceshot](/assets/spaceshot.PNG)
-![Baby Spaceshot](/assets/baby_spacehot.PNG)
+![Baby Spaceshot](/assets/baby_spaceshot.PNG)
 
 ## Built With
 * [TKInter](https://docs.python.org/3/library/tkinter.html) - Python Interface to TK GUI toolkit
@@ -68,6 +69,6 @@ Clearly this is a lot of data. The graphical application makes it all a bit easi
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
-_The many many many folks who sweat and tears have gone into Spaceshot_
+_The many many many folks whose sweat and tears have gone into Spaceshot_
 
 
