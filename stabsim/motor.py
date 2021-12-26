@@ -1,6 +1,7 @@
 import csv
 from .utility import read_csv
 import numpy as np
+import json
 
 """
 Simple model for a solid rocket motor for mechanical simulations
@@ -130,3 +131,15 @@ class Motor:
         # values extrapolated through simple linear approximation
         linear_approx = (self.wet_mass - self.dry_mass) * ((self.t[-1] - time) / self.t[-1]) + self.dry_mass
         return max(linear_approx, self.dry_mass) 
+
+    def tostring(self):
+        vars = {
+            'wet_mass' : self.wet_mass,
+            'dry_mass' : self.dry_mass,
+            'radius' : self.radius,
+            'length' : self.length,
+            'width' : self.hole_radius,
+            'time' : self.t.tolist(),
+            'thrust' : [self.thrust(t) for t in self.t]
+        }
+        return json.dumps(vars)

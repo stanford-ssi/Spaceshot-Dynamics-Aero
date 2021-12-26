@@ -1,10 +1,11 @@
 import tkinter as tk 
 import tkinter.ttk as ttk
 
-class InputPanel(ttk.Frame):
+class SimulationPanel(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
 
+        self.parent = parent
         self.controller = controller
 
         stab_frame = ttk.LabelFrame(self, text="Stability Parameters")
@@ -74,3 +75,6 @@ class InputPanel(ttk.Frame):
             self.sim_freq.set(str(self.controller.timesteps / self.controller.length))
         else:
             self.sim_freq.set('0')
+
+    def log(self, text):
+        self.parent.master.log(text)

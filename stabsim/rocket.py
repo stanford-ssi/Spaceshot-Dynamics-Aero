@@ -1,8 +1,9 @@
 import numpy as np
 import os 
-from .utility import insert_newlines, read_csv, fill_list, join
+from .utility import insert_newlines, read_csv, join
 import math
 from .DigitalDATCOM.datcom_lookup import lookup
+import json
 
 class Rocket:
     def __init__(self, mass, cg, diameter, iz, ix, surf_area, cone_len, frame_len, dcm=None):
@@ -152,3 +153,17 @@ class Rocket:
     def get_c_spin(self): # Spin damping coefficient
         return -0.06
         # Source: James & Matt graphing
+
+    def tostring(self):
+        vars = {
+            'Mass' : self.mass,
+            'CG' : self.cg,
+            'Diameter' : self.diameter,
+            'I_z' : self.iz,
+            'I_x' : self.ix,
+            'Surface Area' : self.surf_area,
+            'Nosecone Length' : self.cone_len,
+            'Airframe Length' : self.frame_len
+        }
+
+        return json.dumps(vars)

@@ -1,7 +1,7 @@
 import tkinter as tk 
 import tkinter.ttk as ttk
 
-from .input_panels import InputPanel
+from .sim_panel import SimulationPanel
 from .file_panels import FilePanel
 from .rocket_panel import RocketPanel
 
@@ -20,7 +20,7 @@ class LeftPanel(ttk.Frame):
         self.notebook.grid(row=1, column=0, stick='nsew')
         self.rowconfigure(1, weight=1)
 
-        self.input_pane = InputPanel(self.notebook, self.controller)
+        self.input_pane = SimulationPanel(self.notebook, self.controller)
         self.notebook.add(self.input_pane, text="Simulation Parameters")
 
         self.rocket_pane = RocketPanel(self.notebook, self.controller)

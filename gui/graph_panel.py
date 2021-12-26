@@ -18,12 +18,19 @@ class GraphPanel(ttk.Notebook):
         self.add(self.stab_frame, text="Stabiity Thresholds")
 
     def draw(self, motor, rocket, kinematics, stability):
-        self.draw_frame(motor, self.motor_frame)
-        self.draw_frame(rocket, self.rocket_frame)
-        self.draw_frame(kinematics, self.kinem_frame)
-        self.draw_frame(stability, self.stab_frame)
+        GraphPanel.draw_frame(motor, self.motor_frame)
+        GraphPanel.draw_frame(rocket, self.rocket_frame)
+        GraphPanel.draw_frame(kinematics, self.kinem_frame)
+        GraphPanel.draw_frame(stability, self.stab_frame)
 
-    def draw_frame(self, fig, frame):
+    def clear(self):
+        GraphPanel.clear_frame(self.motor_frame)
+        GraphPanel.clear_frame(self.rocket_frame)
+        GraphPanel.clear_frame(self.kinem_frame)
+        GraphPanel.clear_frame(self.stab_frame)
+
+    @classmethod
+    def draw_frame(cls, fig, frame):
         canvas = FigureCanvasTkAgg(fig, master=frame)  
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -31,3 +38,8 @@ class GraphPanel(ttk.Notebook):
         toolbar = NavigationToolbar2Tk(canvas, frame)
         toolbar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+    @classmethod
+    def clear_frame(cls, frame):
+        for widget in frame.winfo_children():
+            widget.destroy()

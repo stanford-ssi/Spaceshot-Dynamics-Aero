@@ -43,7 +43,7 @@ class MainWindow(tk.Tk):
 
     def run(self):
         self.right_panel.pb.start()
-        ThreadedTask(self.queue, self.controller).start()
+        ProfileTask(self.queue, self.controller).start()
         self.process_queue()
 
     def process_queue(self):
@@ -51,10 +51,13 @@ class MainWindow(tk.Tk):
             self.queue.get_nowait()
 
             motor, rocket, kinem, spin = self.controller.vis()
+            self.right_panel.graphs.clear()
             self.right_panel.graphs.draw(motor, rocket, kinem, spin)
-            self.right_panel.update_output(self.controller.profile.apogee(), self.controller.profile.min_spin())   
+            self.right_panel.output_bar.update(self.controller.profile.apogee(), 
+                self.controller.profile.min_spin(), 
+                self.controller.profile.is_stable())   
             self.right_panel.pb.stop()
-            
+
             self.left_panel.rb.config(state=tk.NORMAL)
             self.log("Simulation completed")
         except queue.Empty:
@@ -64,7 +67,7 @@ class MainWindow(tk.Tk):
         self.right_panel.log(text)
 
 
-class ThreadedTask(threading.Thread):
+class ProfileTask(threading.Thread):
     def __init__(self, queue, controller):
         super().__init__()
         self.queue = queue

@@ -141,7 +141,7 @@ class Profile:
     def min_spin(self):
         gyro_max = np.max(self.gyro_stab_crit())
         dyn_max = np.max(self.dynamic_stab_crit())
-        return max(gyro_max, dyn_max)
+        return round(max(gyro_max, dyn_max))
 
     def apogee(self):
-        return np.max(self.altit)
+        return round(np.max(self.altit))
