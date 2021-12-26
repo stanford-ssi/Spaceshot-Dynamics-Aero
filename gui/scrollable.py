@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 
 class ScrollableFrame(ttk.Frame):
+    BLUE = '#2f60d8'
+    GREY = '#1c1c1c'
+
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
         canvas = tk.Canvas(self)
@@ -25,6 +28,6 @@ class ScrollableFrame(ttk.Frame):
         self.counter = 0
 
     def log(self, text):
-        bg = '#1c1c1c' if self.counter % 2 == 0 else '#2f60d8'
+        bg = ScrollableFrame.GREY if self.counter % 2 == 0 else ScrollableFrame.BLUE
         ttk.Label(self.scrollable_frame, text=text, background=bg, width=200).pack()
         self.counter = self.counter + 1

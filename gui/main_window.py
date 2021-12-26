@@ -11,6 +11,7 @@ import threading
 import queue
 
 class MainWindow(tk.Tk):
+    FINISHED_TASK = 'fini'
     def __init__(self):
         tk.Tk.__init__(self)
 
@@ -42,7 +43,7 @@ class MainWindow(tk.Tk):
         self.log("Welcome to Stabsim")
 
     def run(self):
-        self.right_panel.pb.start()
+        self.right_panel.output_bar.pb.start()
         ProfileTask(self.queue, self.controller).start()
         self.process_queue()
 
@@ -56,7 +57,7 @@ class MainWindow(tk.Tk):
             self.right_panel.output_bar.update(self.controller.profile.apogee(), 
                 self.controller.profile.min_spin(), 
                 self.controller.profile.is_stable())   
-            self.right_panel.pb.stop()
+            self.right_panel.output_bar.pb.stop()
 
             self.left_panel.rb.config(state=tk.NORMAL)
             self.log("Simulation completed")
@@ -75,4 +76,4 @@ class ProfileTask(threading.Thread):
     
     def run(self):
         self.controller.new_profile()
-        self.queue.put("fini")
+        self.queue.put(MainWindow.FINISHED_TASK)

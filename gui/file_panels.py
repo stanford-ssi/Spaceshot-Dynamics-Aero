@@ -62,19 +62,19 @@ class FilePanel(ttk.Frame):
         self.motor.configure(text="Motor Geom:" + self.motor_file)
         
         if self.motor_file[-3:] == 'csv':
-            if self.controller.motor.set_spec(self.motor_file) == -1:
+            if self.controller.motor.set_spec(self.motor_file) == Motor.ERROR:
                 self.log("Error: Improperly formatted motor file")
             else:
                 self.log("Loaded new motor dimensions")
         elif self.thrust_file != '':
             self.controller.motor = Motor.fromfiles(self.motor_file, self.thrust_file)
-            if self.controller.motor == -1:
+            if self.controller.motor == Motor.ERROR:
                 self.log("Error: Improperly formatted motor or thrust curve file")
             else:
                 self.log("Loaded new motor dimensions and thrust curve")
         else:
             self.controller.motor = Motor.fromfile(self.motor_file)
-            if self.controller.motor == -1:
+            if self.controller.motor == Motor.ERROR:
                 self.log("Error: Improperly formatted motor file")
             else:
                 self.log("Loaded new motor dimensions and thrust curve")  
@@ -87,7 +87,7 @@ class FilePanel(ttk.Frame):
         self.thrust.configure(text="Thrust Curve:" + self.thrust_file)
 
         if self.motor_file == '':
-            if self.controller.motor.update_thrust(self.thrust_file) == -1:
+            if self.controller.motor.update_thrust(self.thrust_file) == Motor.ERROR:
                 self.log("Error: Improperly formatted thrust curve")
             else:
                 self.log("Loaded new thrust curve")

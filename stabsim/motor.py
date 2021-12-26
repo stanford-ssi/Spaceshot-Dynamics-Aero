@@ -3,11 +3,56 @@ from .utility import read_csv
 import numpy as np
 import json
 
-"""
-Simple model for a solid rocket motor for mechanical simulations
-"""
 class Motor:
+    """
+    Model of a solid rocket motor for mechanical simulations
+
+    Attributes
+    ----------
+    wet_mass : float
+    dry_mass : float
+    radius : float
+    hole_radius : float, optional
+        radius of igniter hole
+    length : float
+    t : list
+        times of documented thrust values, t[-1] is the length of motor burn
+    
+    Methods
+    -------
+    empty()
+        return vacuous motor
+    fromfile(rasp)
+        return motor using RASP documentation style
+    fromfiles(spec, rasp)
+        returns motor using csv and thrust from RASP file
+    set_spec(spec)
+        updates motor variables from csv file
+    update_thrust(*args)
+        updates thrust curve either with time/force lists or file
+    thrust(t)
+        returns thrust (N) at a given time
+    tostring() => string
+        returns stringified motor
+    """
+    ERROR = -1
+    POLY_DEG = 4
+
     def __init__(self, wet_mass, dry_mass, radius, length, thrust_curve, time=-1, hole_radius=0.):
+        """
+        Parameters
+        ----------
+        wet_mass : float
+        dry_mass : float
+        radius : float
+        length : float
+        thrust_curve : list
+            time ordered thrust (N) values
+        time : float or list, optional
+            if single number assume evenly spaced thrust_curve, otherwise should match thrust_curve length
+        hole_radius : float, optional
+            radius of igniter hole, likely negligible
+        """
         self.wet_mass = wet_mass
         self.dry_mass = dry_mass
         self.radius = radius
@@ -41,15 +86,15 @@ class Motor:
                 float(spec[2]) / 1000, # length
                 force, time=time)
         except ValueError:
-            return -1
+            return Motor.ERROR
 
     @classmethod
     def fromfiles(cls, spec, rasp):
         motor = Motor.fromfile(rasp)
-        if motor == -1:
+        if motor == Motor.ERROR:
             return motor
         else:
-            return -1 if motor.set_spec(spec) == -1 else motor
+            return Motor.ERROR if motor.set_spec(spec) == Motor.ERROR else motor
 
     @classmethod
     def get_thrust(cls, file):
@@ -66,7 +111,8 @@ class Motor:
                 time = [float(line.split()[0]) for i, line in enumerate(thrust_curve) if i > start]
                 force = [float(line.split()[1]) for i, line in enumerate(thrust_curve) if i > start]
             except ValueError:
-                return -1, -1
+                return Motor.ERROR, Motor.ERROR
+
         return time, force
         
     def set_spec(self, file):
@@ -78,7 +124,7 @@ class Motor:
             self.length = float(dict['length']) if 'length' in dict else 0
             self.hole_radius = float(dict['width']) if 'width' in dict else 0
         except ValueError:
-            return -1
+            return Motor.ERROR
 
     def update_thrust(self, *args):
         if len(args) == 1:
@@ -90,7 +136,7 @@ class Motor:
             return
 
         if time == -1:
-            return -1
+            return Motor.ERROR
         if len(force) == 0:
             return
         
@@ -100,7 +146,7 @@ class Motor:
         except TypeError:
             self.t = np.linspace(0, time, len(force))
         burn_time = time[-1]
-        thrust_curve = np.polyfit(self.t, force, 4)
+        thrust_curve = np.polyfit(self.t, force, Motor.POLY_DEG)
         thrust_curve = np.poly1d(thrust_curve)
         def thrust(t):
             if t <= burn_time:
@@ -114,22 +160,28 @@ class Motor:
     def inner_radius(self, time):
         propellant_density = self.wet_mass / np.pi / self.length /(self.radius**2 - self.hole_radius**2)
         return np.sqrt((self.radius**2) - (self.wet_mass_variable(time) / (propellant_density * np.pi * self.length))) #derived from density equation
-
-    # Moment of inertia along the axis of symmetry of rocket
+ 
     def iz(self, time):
-        iz_dry_mass = 0.5 * self.dry_mass * self.radius**2 # 2 thin disks (iz = 1/2*(dry mass/2)r^2) on either end
-        iz_wet_mass = max(0.5 * self.wet_mass_variable(time) * ((self.radius**2) + (self.inner_radius(time)**2)), 0) #cylinder with hole in center
-        return iz_dry_mass + iz_wet_mass
-
-    # Moment of inertia not along axis of symmetry of rocket
-    def ix(self, time):
-        ix_dry = 2 * (0.125 * self.dry_mass * self.radius**2 + 0.5 * self.dry_mass * (self.length/2)**2)  # 2 thin disks (ix = 1/4(dry mass/2)r^2) on either end, with parallel axis theorem ((dry mass/2)d^2)
-        ix_wet = max((1/12) * self.wet_mass_variable(time) * (3 * (self.radius**2 + self.inner_radius(time)**2) + self.length**2), 0) #cylinder with hole in center
+        """
+        Moment of inertia along the axis of symmetry of rocket
+        """
+        ix_dry = self.dry_mass * self.radius**2 
+        ix_wet = max(0.5 * self.wet_mass_variable(time) * (self.radius**2 + self.inner_radius(time)**2), 0)
         return ix_dry + ix_wet
 
-    def mass(self, time):        
-        # values extrapolated through simple linear approximation
-        linear_approx = (self.wet_mass - self.dry_mass) * ((self.t[-1] - time) / self.t[-1]) + self.dry_mass
+    def ix(self, time):
+        """
+        Moment of inertia not along axis of symmetry of rocket
+        """
+        iz_dry = self.dry_mass / 12 * (6 * self.radius**2 + self.length**2)  
+        iz_wet = max(self.wet_mass_variable(time) / 12 * (3 * (self.radius**2 + self.inner_radius(time)**2) + self.length**2), 0) 
+        return iz_dry + iz_wet
+
+    def mass(self, time):   
+        """
+        Mass as a function of time from motor burn
+        """     
+        linear_approx = self.dry_mass + (self.wet_mass - self.dry_mass) * ((self.t[-1] - time) / self.t[-1])
         return max(linear_approx, self.dry_mass) 
 
     def tostring(self):

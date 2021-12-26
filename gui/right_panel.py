@@ -3,7 +3,7 @@ import tkinter.ttk as ttk
 
 from .graph_panel import GraphPanel
 from .output_bar import OutputBar
-from .ScrollableFrame import ScrollableFrame
+from .scrollable import ScrollableFrame
 
 class RightPanel(ttk.Frame):
     def __init__(self, parent, controller):
@@ -13,7 +13,7 @@ class RightPanel(ttk.Frame):
         self.rowconfigure(0, weight=0)
 
         self.graphs = GraphPanel(self, controller)
-        self.graphs.grid(row=1, column=0, stick='ns')
+        self.graphs.grid(row=1, column=0, stick='nsew')
         self.rowconfigure(1, weight=4)
 
         self.output_bar = OutputBar(self, controller)

@@ -6,6 +6,44 @@ from .DigitalDATCOM.datcom_lookup import lookup
 import json
 
 class Rocket:
+    """
+    Model of a rocket for mechanical simulations
+
+    Attributes
+    ----------
+    mass : float
+    cg : float
+    diameter : float
+    iz : float
+        moment of inertia in direction of travel
+    ix : float
+        moment of inertia perpendicular to direction of motion
+    surf_area : float
+    cone_len : float
+        Nosecone length
+    frame_len : float
+        Airframe length
+    dcm : string
+        file containing DATCOM file
+
+    Methods
+    -------
+    empty()
+        returns vacuous rocket
+    fromfile(rocket_params, dcm=None)
+        returns motor using csv and optional dcm file
+    set_spec(spec)
+        updates motor variables from csv file
+    update_coeffs(machs, aoas, altits, masses, cgs, mach_scale, altit_scale, mass_scale)
+        updates vehicles aerodynamic coefficients given a specifc set of flight conditions  
+    tostring() => string
+        returns stringified rocket
+    """
+    ERROR = -1
+    DCM_INCR = 0.02
+    DCM_PRECIS = 10
+    TEMPLATE = 'rocket_'
+    
     def __init__(self, mass, cg, diameter, iz, ix, surf_area, cone_len, frame_len, dcm=None):
         self.mass = mass
         self.cg = cg
@@ -46,16 +84,21 @@ class Rocket:
             self.cone_len = float(dict['Nosecone Length']) if 'Nosecone Length' in dict else 0
             self.frame_len = float(dict['Airframe Length']) if 'Airframe Length' in dict else 0
         except ValueError:
-            return -1
+            return Rocket.ERROR
 
     def create_dcm(self):
+        """
+        Create a DATCOM file using current rocket's specifications
+        """
         # generate ogive equation based off given parameters
         rad = self.diameter / 2
         rho = (rad**2 + self.cone_len**2) / 2 / rad
         def ogive(x):
             ans = np.sqrt(rho**2 - (self.cone_len - x)**2) + rad - rho
-            return abs(round(ans, 10))
-        nosecone = np.arange(0, self.cone_len, 0.02)
+            return abs(round(ans, Rocket.DCM_PRECIS))
+
+        # create datcom parameters
+        nosecone = np.arange(0, self.cone_len, Rocket.DCM_INCR)
         airframe = np.linspace(self.cone_len, self.cone_len + self.frame_len, num=3) 
         xs = np.concatenate((nosecone, airframe)).tolist()
         rs = [ogive(x) for x in nosecone] + [rad for x in airframe]
@@ -77,16 +120,18 @@ class Rocket:
             template = template.replace(key, value)
         
         # generate new template file
-        new_template = 'rocket_'
         ind = 0
-        while os.path.exists(join((path, 'DigitalDATCOM', new_template+str(ind)))):
+        while os.path.exists(join((path, 'DigitalDATCOM', Rocket.TEMPLATE+str(ind)))):
             ind = ind + 1
-        new_template = new_template + str(ind)
+        new_template = Rocket.TEMPLATE + str(ind)
         with open(join((path, 'DigitalDATCOM', new_template)), 'w') as f:
             f.write(template)
         return new_template
 
     def update_dcm(self):
+        """
+        Update DATCOM file if no valid one is present
+        """
         path = os.path.dirname(os.path.abspath(__file__))
         if not self.dcm or not os.path.exists(join((path, 'DigitalDATCOM', str(self.dcm)))):
             self.dcm = self.create_dcm()
@@ -98,11 +143,32 @@ class Rocket:
         self.cma_dot = []
         self.cmq_dot = []
 
-    def update_coeffs(self, machs, aoa, altits, masses, cgs, mach_scale=10, altit_scale=0.01, mass_scale=10):
+    def update_coeffs(self, machs, aoa, altits, masses, cgs, precis=(0.1, 100, 0.1)):
+        """
+        Updates vehicles aerodynamic coefficients given a specifc set of flight conditions  
+        
+        Parameters
+        ----------
+        machs : iterable
+            list of mach values for vechicle
+        aoa : float
+            angle of attack
+        altits : iterable
+            list of altitude values for vehicle
+        masses : iterable
+            list of mass values for vehicle (rocket + motor)
+        cgs : iterable
+            list of centers of gravity for vehicle (rocket + motor)
+        precis : indexable container, optional
+            scale[0] precision of mach values in memoization
+            scale[1] precision of altitude values in memoization
+            scale[2] precision of mass values in memoization
+        """
         self.clear_coeffs()
 
         for mach, altit, mass, cg in zip(machs, altits, masses, cgs):
-            key = (round(mach*mach_scale), round(altit*altit_scale), round(mass*mass_scale))
+            # memoize because calls to lookup are expensive
+            key = (round(mach/precis[0]), round(altit/precis[1]), round(mass/precis[2]))
             if key in self.memoize:
                 cd, cm, cl, cma, cmq = self.memoize[key]
                 self.cd.append(cd)
@@ -112,6 +178,7 @@ class Rocket:
                 self.cmq_dot.append(cmq)
                 continue
 
+            # wrapper around Digital DATCOM
             lookup_results = lookup([mach], # mach number 
                 [aoa],                      # angle of attack
                 [altit],                    # altitude
@@ -120,39 +187,56 @@ class Rocket:
                 template=self.dcm)
 
             coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
+            # in case call to DATCOM fails use previous values
             self.cd.append(self.last_val[0] if coeffs['CD'] == 'NDM' or math.isnan(coeffs['CD']) else coeffs['CD'] )
             self.cm.append(self.last_val[1] if coeffs['CM'] == 'NDM' or math.isnan(coeffs['CM']) else coeffs['CM'])
             self.cl.append(self.last_val[2] if coeffs['CL'] == 'NDM' or math.isnan(coeffs['CL']) else coeffs['CL'])
             self.cma_dot.append(self.last_val[3] if math.isnan(coeffs['CMAD']) else coeffs['CMAD'])
             self.cmq_dot.append(self.last_val[4] if math.isnan(coeffs['CMQ']) else coeffs['CMQ'])
 
+            # remember this computation
             self.last_val = (self.cd[-1], self.cm[-1], self.cl[-1], self.cma_dot[-1], self.cmq_dot[-1])
             self.memoize[key] = self.last_val
                     
-    def get_cd(self, datcom=True): # Drag coefficient
+    def get_cd(self, datcom=True): 
+        """
+        Coefficient of drag
+        """
         return np.array(self.cd) if datcom else 0.3
         # Source: https://www.hindawi.com/journals/ijae/2020/6043721/ (Figure 5)
 
-    def get_cm_alpha(self, datcom=True): # Overturning (a.k.a. pitching/rolling) moment coefficient
+    def get_cm_alpha(self, datcom=True): 
+        """
+        Oveturning (aka pitching or rolling) moment coefficient
+        """
         return np.array(self.cm) if datcom else 4
         # Source: https://www.hindawi.com/journals/ijae/2020/6043721/ (Figure 6e)
 
-    def get_cl_alpha(self, datcom=True): # Lift force coefficient
+    def get_cl_alpha(self, datcom=True): 
+        """
+        Lift force coefficient
+        """
         return np.array(self.cl) if datcom else 2
         # Source: https://www.hindawi.com/journals/ijae/2020/6043721/ (Figure 6c)
 
-    def get_cm_dot(self, datcom=True): # Pitch damping moment coefficient (due to rate of change of angle of attack plus tranverse angular velocity)
+    def get_cm_dot(self, datcom=True): 
+        """
+        Pitch damping moment coefficient
+        """
         return np.array(self.cma_dot) + np.array(self.cmq_dot) if datcom else -80
         # Source: https://apps.dtic.mil/dtic/tr/fulltext/u2/a417123.pdf (Figure 4)
 
-    def get_cm_p_alpha(self): # Magnus moment coefficient
-        #TODO: there is a way to get magnus stuff out datcom, look into SPIN control card
-        return 1
-        # Source: https://apps.dtic.mil/dtic/tr/fulltext/u2/a417123.pdf (Figure 3)
-
-    def get_c_spin(self): # Spin damping coefficient
+    def get_c_spin(self):
+        """
+        Spin damping coefficient
+        """
         return -0.06
         # Source: James & Matt graphing
+
+    def get_cm_p_alpha(self): # Magnus moment coefficient
+        #BUG: there is a way to get magnus stuff out datcom, look into SPIN control card
+        return 1
+        # Source: https://apps.dtic.mil/dtic/tr/fulltext/u2/a417123.pdf (Figure 3)
 
     def tostring(self):
         vars = {

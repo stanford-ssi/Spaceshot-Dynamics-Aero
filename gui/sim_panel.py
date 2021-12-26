@@ -1,5 +1,8 @@
-import tkinter as tk 
+import tkinter as tk
+from tkinter.font import NORMAL 
 import tkinter.ttk as ttk
+
+from stabsim.profile import Profile
 
 class SimulationPanel(ttk.Frame):
     def __init__(self, parent, controller):
@@ -8,7 +11,7 @@ class SimulationPanel(ttk.Frame):
         self.parent = parent
         self.controller = controller
 
-        stab_frame = ttk.LabelFrame(self, text="Stability Parameters")
+        stab_frame = ttk.LabelFrame(self, text="Flight Parameters")
         stab_frame.pack(fill='both', expand='yes')
 
         ttk.Label(stab_frame, text="Spin speed (rad/s)").grid(row=0)
@@ -42,15 +45,29 @@ class SimulationPanel(ttk.Frame):
         sim_frame = ttk.LabelFrame(self, text="Simulation Parameters")
         sim_frame.pack(fill='both', expand='yes')
 
-        ttk.Label(sim_frame, text="Simulation Length (s)").grid(row=0)
-        self.sim_len = tk.StringVar()
-        tk.Entry(sim_frame, textvariable=self.sim_len).grid(row=0, column=1)
-        sim_frame.rowconfigure(0, weight=1)
+        self.mode = tk.IntVar(None, Profile.NORMAL)
+        dict = {
+            "Coarse" : Profile.COARSE,
+            "Normal" : Profile.NORMAL,
+            "Fine  " : Profile.FINE
+        }
+        for ind, key in enumerate(dict):
+            ttk.Radiobutton(sim_frame, 
+                text=key, 
+                variable=self.mode, 
+                command=self.set_mode, 
+                value=dict[key]
+            ).grid(row=0, column=ind)
 
-        ttk.Label(sim_frame, text="Timestep Frequency (Hz)").grid(row=1)
-        self.sim_freq = tk.StringVar()
-        tk.Entry(sim_frame, textvariable=self.sim_freq).grid(row=1, column=1)
+        ttk.Label(sim_frame, text="Simulation Length (s)").grid(row=1)
+        self.sim_len = tk.StringVar()
+        tk.Entry(sim_frame, textvariable=self.sim_len).grid(row=1, column=1)
         sim_frame.rowconfigure(1, weight=1)
+
+        ttk.Label(sim_frame, text="Timestep Frequency (Hz)").grid(row=2)
+        self.sim_freq = tk.StringVar()
+        tk.Entry(sim_frame, textvariable=self.sim_freq).grid(row=2, column=1)
+        sim_frame.rowconfigure(2, weight=1)
 
     def set(self):
         try:
@@ -75,6 +92,15 @@ class SimulationPanel(ttk.Frame):
             self.sim_freq.set(str(self.controller.timesteps / self.controller.length))
         else:
             self.sim_freq.set('0')
+
+    def set_mode(self):
+        if self.mode == Profile.COARSE:
+            self.sim_freq.set("5")
+        elif self.mode == Profile.NORMAL:
+            self.sim_freq.set("10")
+        elif self.mode == Profile.FINE:
+            self.sim_freq.set("20")
+        self.controller.mode = self.mode.get()
 
     def log(self, text):
         self.parent.master.log(text)

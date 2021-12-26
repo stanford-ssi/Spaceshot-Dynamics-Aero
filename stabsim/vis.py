@@ -71,34 +71,32 @@ def rocket(profile, label_mach=False, show=True):
 
         plt.axvline(mach_trans, color='burlywood', label='Mach')
         plt.fill_between(profile.tt, 0, plt.ylim()[1], where=np.logical_and(profile.mach>0.8, profile.mach<1.2), facecolor='k', alpha=0.3)
-
+    
     plt.legend()
 
     plt2 = plt.twinx()
     plt2.plot(profile.tt, profile.rocket.get_cm_dot(), 'tab:red', label=r'$|C_{M_{\dot{\alpha}}}+C_{M_{\dot{q}}}|$')
-
     plt.legend()
+
     if show:
         plt.show()
     else:
         return fig
 
 def motor(motor, show=True):
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+    fig = plt.figure()
 
     time = motor.t
 
-    ax1.set_xlabel('Time (s)')
-    ax1.set_ylabel('Mass (kg)')
-    ax1.plot(time, [motor.mass(t) for t in time])
+    plt.xlabel('Time (s)')
+    plt.ylabel('Mass (kg)')
+    plt.plot(time, [motor.mass(t) for t in time], color='tab:blue', label='Mass')
+    plt.legend(loc='lower left')
 
-    ax2.set_xlabel('Time (s)')
-    ax2.set_ylabel(r'$I_x$ (kg*m/s)')
-    ax2.plot(time, [motor.ix(t) for t in time])
-
-    ax3.set_xlabel('Time (s)')
-    ax3.set_ylabel(r'$I_z$ (kg*m/s)')
-    ax3.plot(time, [motor.iz(t) for t in time])
+    plt2 = plt.twinx()
+    plt2.set_ylabel('Thrust (N)')
+    plt2.plot(time, [motor.thrust(t) for t in time], color='tab:red', label='Thrust')
+    plt.legend(loc='upper right')
 
     if show:
         plt.show()

@@ -13,6 +13,7 @@ class Controller:
         self.length = 0
         self.hangle = 0
         self.timesteps = 0
+        self.mode = Profile.NORMAL
 
         self.profile = None
 
@@ -21,7 +22,8 @@ class Controller:
             launch_altit=self.launch_altit, 
             length=self.length, 
             hangle=self.hangle, 
-            timesteps=self.timesteps)
+            timesteps=self.timesteps,
+            mode=self.mode)
 
     def vis(self):
         kinem = vis.kinematics(self.profile, rho=True, show=False)

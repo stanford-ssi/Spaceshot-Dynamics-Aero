@@ -14,7 +14,7 @@ rocket = "data/Marvin.csv"
 
 marvin = Rocket.fromfile(os.path.join(script_dir, rocket))
 h550 = Motor.fromfiles(os.path.join(script_dir, motor_dim), os.path.join(script_dir, motor_thrust))
-babyspacehot = Profile(marvin, h550, 262, launch_altit=26000, length=5, timesteps=100)
+baby_spacehot = Profile(marvin, h550, 262, launch_altit=26000, length=5, timesteps=100)
 
-vis.kinematics(babyspacehot)
-vis.spin(babyspacehot)
+vis.kinematics(baby_spacehot)
+vis.spin(baby_spacehot)
